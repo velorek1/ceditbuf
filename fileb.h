@@ -16,7 +16,7 @@ Last modified: 14/04/2019 Rename headers
 /*====================================================================*/
 
 #include <stdio.h>
-#include "uintf.h"
+#include "ui.h"
 #include "scbuf.h"
 
 /*====================================================================*/
@@ -34,6 +34,5 @@ long    getfileSize(FILE * filePtr);
 long    countLinesFile(FILE * filePtr);
 long    checkFile(FILE * filePtr);
 int     file_exists(char *fileName);
-void    checkConfigFile(int setValue);
 
 #endif

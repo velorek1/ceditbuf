@@ -1,81 +1,59 @@
-/*
-======================================================================
-HEADER: Module to create a double screen buffer to control how things
-are displayed on the terminal.
-
-@author : Velorek
-@version : 1.0
-Last modified : 14/4/2019 Rename headers + screenChanged added
-======================================================================
-*/
-
 #ifndef _SCBUF_H_
 #define _SCBUF_H_
 
-/*====================================================================*/
-/* COMPILER DIRECTIVES AND INCLUDES                                   */
-/*====================================================================*/
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
-#include <wchar.h>      /* wint_t */
+#include <wchar.h>
 #include "rterm.h"
-#include "keyb.h"
 
+#define HOR_LINE 9472
+#define VER_LINE 9474
+#define UPPER_LEFT_CORNER 9484
+#define LOWER_LEFT_CORNER 9492
+#define UPPER_RIGHT_CORNER 9488
+#define LOWER_RIGHT_CORNER 9496
+#define UNICODEBAR1 0x2592
 
-#define NHOR_LINE -50
-#define NVER_LINE -51
-#define NUPPER_LEFT_CORNER -52
-#define NLOWER_LEFT_CORNER -53
-#define NUPPER_RIGHT_CORNER -54
-#define NLOWER_RIGHT_CORNER -55
-#define HOR_LINE 50
-#define VER_LINE 51
-#define UPPER_LEFT_CORNER 52
-#define LOWER_LEFT_CORNER 53
-#define UPPER_RIGHT_CORNER 54
-#define LOWER_RIGHT_CORNER 55
-
-/*====================================================================*/
-/* TYPE DEFINITIONS                                                   */
-/*====================================================================*/
-
-typedef struct _screencell {
-  int     index;        // Item number
-  int     backcolor0;       // Back and Fore colors of each cell
-  int     forecolor0;
-  int     sc_rows;          //Save screen dimensions
-  int     sc_columns;
-  char    item;         // Item string
-  int     specialchar;      // Control for accents and special chars
-  struct _screencell *next; // Pointer to next item
+typedef struct _screencell 
+{ 
+	int index;
+   	char backColor;
+        char foreColor;
+        unsigned char toUpdate;
+        //int char attrib; 
+        wchar_t ch;
+	struct _screencell *next;
 } SCREENCELL;
 
-/*====================================================================*/
-/* FUNCTION PROTOTYPES                                                */
-/*====================================================================*/
 
-void    create_screen();
-void    write_ch(int x, int y, char ch, int backcolor, int forecolor);
-char    read_char(int x, int y);
-void    write_str(int x, int y, char *str, int backcolor, int forecolor);
-int     write_num(int x, int y, int num, int length, int backcolor,
-          int forecolor);
-void    save_buffer();
-void    restore_buffer();
-void    screen_color(int color);
-void    free_buffer();
-void    draw_window(int x1, int y1, int x2, int y2, int backcolor,
-            int bordercolor, int titlecolor, int border, int title);
-void    close_window();
-int     mapChartoU8(int character);
-void    update_screen();
-void    update_ch(int x, int y, char ch, char specialChar, int backcolor, int forecolor);
-int     screenChanged();
-int     update_smart();
-void    flush_buffer();
-void    flush_cell(int x, int y);
-void    clearString(char *string, int max);
+/* Adapted from Kernighan and Pike's "The Practice of Programming"  pp.46 et 
+seq. (Addison-Wesley 1999) - computerPhile */
 
+// create new list element of type SCREENCELL from the supplied text string
+SCREENCELL *newelement(SCREENCELL temp);
+SCREENCELL *addfront(SCREENCELL *head, SCREENCELL *newp);
+SCREENCELL *addend (SCREENCELL *head, SCREENCELL *newp);
+void deleteList(SCREENCELL **head);
+int length(SCREENCELL **head);
+void reindex(SCREENCELL **head);
+//SCREEN BUFFER ROUTINES
+int create_screen(SCREENCELL **newScreen);
+void update_ch(int x, int y, wchar_t ch, char backcolor, char forecolor);
+void update_screen(SCREENCELL *newScreen);
+void dump_screen(SCREENCELL *newScreen);
+void write_ch(SCREENCELL *newScreen, int x, int y, wchar_t ch, char backcolor, char forecolor, BOOL raw);
+wchar_t read_char(SCREENCELL *newScreen, int x, int y);
+SCREENCELL read_cell(SCREENCELL *newScreen, int x, int y);
+void write_str(SCREENCELL *newScreen, int x, int y, char *str, char backcolor, char forecolor, BOOL raw);
+void update_str(int x, int y, char *str, char backcolor, char forecolor);
+int write_num(SCREENCELL *newScreen, int x, int y, int num, char backcolor,
+	       char forecolor, BOOL raw);
+void screen_color(SCREENCELL *newScreen, char bcolor, char fcolor, wchar_t ch);
+void copy_screen(SCREENCELL *destination,SCREENCELL *source);
+void xor_update(SCREENCELL *screen1, SCREENCELL *screen2);
+void xor_copy(SCREENCELL *screen1, SCREENCELL *screen2);
+void draw_window(SCREENCELL *newScreen, int x1, int y1, int x2, int y2, int backcolor, int bordercolor, int titlecolor, BOOL border, BOOL title, BOOL shadow, BOOL raw);
 #endif

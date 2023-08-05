@@ -1,11 +1,11 @@
 /*
 ========================================================================
-- HEADER - 
+- HEADER -
 Module to handle keyboard input in Linux and create
 a further layer of abstraction.
 @author : Velorek
-@version : 1.0  
-Last modified: 11/03/2021 +Added home/end keys                                                                
+@version : 1.0
+Last modified: 14/04/2019 Rename Headers
 ========================================================================
 */
 
@@ -49,16 +49,22 @@ Last modified: 11/03/2021 +Added home/end keys
 #define K_END_TRAIL "\e[F"
 #define K_HOME_TRAIL2 "\e[1~"
 #define K_END_TRAIL2 "\e[4~"
-#define K_INSERT "\e[2~"
+
+
 #define K_DELETE "\e[3~"
 
+#define K_CTRL_A 0x01
+#define K_CTRL_B 0x02
 #define K_CTRL_C 0x03
 #define K_CTRL_D 0x04
 #define K_CTRL_H 0x08
+#define K_CTRL_M 0x0D
 #define K_CTRL_J 0x0A
 #define K_CTRL_L 0x0C
+#define K_CTRL_S 0x13
 
 #define K_ALT_X "\ex"
+#define K_ALT_L "\el"
 #define K_ALT_S "\es"
 #define K_ALT_W "\ew"
 #define K_ALT_H "\eh"
@@ -66,12 +72,14 @@ Last modified: 11/03/2021 +Added home/end keys
 #define K_ALT_O "\eo"
 #define K_ALT_W "\ew"
 #define K_ALT_A "\ea"
+#define K_ALT_I "\ei"
 #define K_ALT_C "\ec"
 #define K_ALT_F "\ef"
 #define K_ALT_P "\ep"
 #define K_ALT_V "\ev"
 #define K_ALT_D "\ed"
-
+#define ESC3X  "\e\e\e"
+#define ESC2X  "\e\e"
 #define SPECIAL_CHARS_SET1 -61
 #define SPECIAL_CHARS_SET2 -62
 

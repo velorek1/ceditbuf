@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include "edbuf.h"
 
+
 // create new list element of type VLINES from the supplied text string
-VLINES *newline(VLINES temp)
+VLINES *_newline(VLINES temp)
 {
 	VLINES *newp;
 	newp = (VLINES *) malloc (sizeof(VLINES));
@@ -16,7 +17,7 @@ VLINES *newline(VLINES temp)
 
 // Delete first element on list whose item field matches the given text
 // NOTE!! delete requests for elements not in the list are silently ignored :-)
-void RemoveThing(VLINES **head, int index)
+void _RemoveThing(VLINES **head, int index)
 {
 	BOOL present = FALSE;
 	VLINES *old;
@@ -34,7 +35,29 @@ void RemoveThing(VLINES **head, int index)
 		free(old); // free up remainder of list element 
 	}
 }
-void deletetheList(VLINES **head) 
+void _hardupdateLINE(VLINES **head, int index, VLINES temp)
+{
+	int i=0;
+	BOOL present = FALSE;
+	VLINES **tracer = head;
+	if ((*tracer)->index==index) present=TRUE;
+	while((*tracer) && !(present)){
+		if ((*tracer)->index==index) {present=TRUE; break;}
+		tracer = &(*tracer)->next;
+	}
+
+	if(present)
+	{
+                for (i=0; i<MAX_LINE_SIZE; i++)
+                {
+                  (*tracer)->linea[i].ch = temp.linea[i].ch;
+                  (*tracer)->linea[i].attrib = temp.linea[i].attrib;
+                  (*tracer)->linea[i].specialChar = temp.linea[i].specialChar;
+                }
+
+	}
+}
+void _deletetheList(VLINES **head) 
 { 
    /* deref head_ref to get the real head */
    VLINES *current = *head; 
@@ -55,7 +78,7 @@ void deletetheList(VLINES **head)
 
 
 // updatelement: remove from list the first instance of an element 
-VLINES *update(VLINES *head, int index, VLINES temp)
+VLINES *_update(VLINES *head, int index, VLINES temp)
 {
 	VLINES *p;
 	for (p = head; p != NULL; p = p -> next) {
@@ -69,7 +92,7 @@ VLINES *update(VLINES *head, int index, VLINES temp)
 }
 
 // getObject 
-VLINES *getObject(VLINES *head, int index)
+VLINES *_getObject(VLINES *head, int index)
 {
 	VLINES *p;
 	for (p = head; p != NULL; p = p -> next) {
@@ -84,7 +107,7 @@ VLINES *getObject(VLINES *head, int index)
 // deleteline: remove from list the first instance of an element 
 // containing a given text string
 // NOTE!! delete requests for elements not in the list are silently ignored 
-VLINES *deleteline(VLINES *head, int index)
+VLINES *_deleteline(VLINES *head, int index)
 {
 	VLINES *p, *prev;
 	prev = NULL;
@@ -104,7 +127,7 @@ VLINES *deleteline(VLINES *head, int index)
 /* addfront: add new VLINES to front of list  */
 /* example usage: start = (addfront(start, newelement("burgers")); */
 
-VLINES *addfront(VLINES *head, VLINES *newp)
+VLINES *_addfront(VLINES *head, VLINES *newp)
 {
 	newp -> next = head;
 	return newp;
@@ -113,7 +136,7 @@ VLINES *addfront(VLINES *head, VLINES *newp)
 /* addend: add new VLINES to the end of a list  */
 /* usage example: start = (addend(start, newelement("wine")); */
 
-VLINES *addatend (VLINES *head, VLINES *newp)
+VLINES *_addatend (VLINES *head, VLINES *newp)
 {
 	VLINES *p2; 	
 	if (head == NULL)
@@ -125,7 +148,7 @@ VLINES *addatend (VLINES *head, VLINES *newp)
 	return head;
 }
 
-void printlist(VLINES **head)
+void _printlist(VLINES **head)
 // this routine uses pointer-to-pointer techniques :-)
 {
 	VLINES **tracer = head;
@@ -140,7 +163,7 @@ void printlist(VLINES **head)
 	  }  
 }
 
-int length(VLINES **head)
+int _length(VLINES **head)
 // this routine uses pointer-to-pointer techniques :-)
 {
 
@@ -153,7 +176,7 @@ int length(VLINES **head)
 	}
        return count;
 }
-void reindex(VLINES **head)
+void _reindex(VLINES **head)
 {
 	int count=0;	
 	VLINES *p=NULL;
@@ -166,20 +189,20 @@ void reindex(VLINES **head)
 	}           
 }
 
-void deleteObject(VLINES **head,int index, BOOL sort){
+void _deleteObject(VLINES **head,int index, BOOL sort){
    VLINES *p=*head;
-  if (index == 0 || length(head) <=1 || p->index == index )
-    RemoveThing(head,index);
+  if (index == 0 || _length(head) <=1 || p->index == index )
+    _RemoveThing(head,index);
   else 
-    deleteline(*head,index);
-  if (sort == TRUE) reindex(head); 
+    _deleteline(*head,index);
+  if (sort == TRUE) _reindex(head); 
 }
 
-int dumpLine(VLINES *head, long index, VLINES *line){
+int _dumpLine(VLINES *head, long index, VLINES *line){
 //Dumps contents of desired line from buffer into temporary line
-   int i=0; char ch=0; char attrib = 0; char specialChar = 0;
+   int i=-1; char ch=0; char attrib = 0; char specialChar = 0;
    VLINES *aux = NULL; //auxiliary pointer
-   aux = getObject(head, index);
+   aux = _getObject(head, index);
    memset(line, '\0',sizeof(&line)); //Clear memory for temporary line
    //Does the line exist?
    if (aux != NULL) { 
@@ -196,12 +219,12 @@ int dumpLine(VLINES *head, long index, VLINES *line){
   }
   return i;
 }
-int updateLine(VLINES *head, long index, VLINES *line){
+int _updateLine(VLINES *head, long index, VLINES *line){
 //Copies contents of desired line from temporary line to buffer
    int i=0; char ch=0; char specialChar = 0; 
    char attrib = 0;
    VLINES *aux = NULL; //auxiliary pointer
-   aux = getObject(head, index);
+   aux = _getObject(head, index);
    //Does the line exist?
    if (aux != NULL) { 
      for (i=0; i<MAX_LINE_SIZE-1; i++)
@@ -214,15 +237,16 @@ int updateLine(VLINES *head, long index, VLINES *line){
        aux->linea[i].attrib = attrib;
       }
      i = aux->index;
-  }
+  } 
   return i;
 }
-CHARBUF getSingleChar(VLINES *head, long X, long Y ){
+
+CHARBUF _getSingleChar(VLINES *head, long X, long Y ){
 //Dumps contents of desired line from buffer into temporary line
    char ch=0; char attrib = 0; char specialChar = 0;
    CHARBUF retvalues;
    VLINES *aux = NULL; //auxiliary pointer
-   aux = getObject(head, Y);
+   aux = _getObject(head, Y);
    //Does the line exist?
    if (aux != NULL) { 
        ch = aux->linea[X].ch;
@@ -240,4 +264,34 @@ CHARBUF getSingleChar(VLINES *head, long X, long Y ){
   retvalues.specialChar = specialChar;
   return retvalues;
 }
+
+int findEndline(VLINES line) {
+  char    ch = 0;
+  int     i=0;
+  int     result = 0;
+
+  do {
+    ch = line.linea[i].ch;
+    //write_ch(i,1,ch,F_RED,B_WHITE);
+    if(ch == 0x00 || ch == 0x10 || ch == 0x0A)
+      break;
+    i++;
+  } while(i < MAX_LINE_SIZE);
+  result = i;
+  ch = 0;
+  return result;
+}
+
+BOOL isLineTerminated(VLINES line) {
+  BOOL flag=FALSE;
+  char ch=0;
+  int i = 0;
+  for (i=0; i< MAX_LINE_SIZE; i++){
+    ch = line.linea[i].ch;
+    if(ch == 0x10 || ch == 0x0A)
+      flag = TRUE;
+  }
+  return flag;
+}
+
 

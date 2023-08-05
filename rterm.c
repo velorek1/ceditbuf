@@ -1,11 +1,12 @@
-/* 
+/*
 ======================================================================
 Module to control some display routines that implement ANSI functions.
+on LINUX Terminals
 
-@author : Velorek
+@author : Velorek (routines extracted from the internet)
 @version : 1.0
- 
-LAST MODIFIED : 14/04/2019 Rename Headers
+
+LAST MODIFIED : 18/01/2023 Kbhit with poll control added
 ======================================================================
 */
 
@@ -17,14 +18,18 @@ LAST MODIFIED : 14/04/2019 Rename Headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <locale.h>
 #include <sys/ioctl.h>
-
+#include <poll.h>
+#include "rterm.h"
+#include "keyb.h"
 /*====================================================================*/
 /* GLOBAL VARIABLES                                                   */
 /*====================================================================*/
 
 struct winsize max;
-static struct termios term, term2, failsafe;
+static struct termios term, failsafe;
 static int peek_character = -1;
 
 /*====================================================================*/
@@ -54,6 +59,21 @@ int resetTerm() {
 /* Detect whether a key has been pressed.*/
 /*---------------------------------------*/
 
+int kbhit(int timeout_ms)
+{
+    struct pollfd fds = {STDIN_FILENO, POLLIN, 0};
+    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+    int ret = poll(&fds, 1, timeout_ms);
+    fcntl(STDIN_FILENO, F_SETFL, 0);
+    if (ret > 0) {
+        return 1;
+    } else if (ret == 0) {
+        return 0; // timeout occurred
+    } else {
+        return -1; // error occurred
+    }
+}
+/*
 int kbhit()
 {
     if(peek_character != -1)
@@ -70,44 +90,26 @@ int kbhit()
 
     return byteswaiting > 0;
 }
-
-
-
+*/
 /*----------------------*/
 /*Read char with control*/
 /*----------------------*/
-int readch() {
+char readch() {
   char    ch;
-  int ret=0;
  if(peek_character != -1) {
     ch = peek_character;
     peek_character = -1;
     return ch;
   }
-  ret = read(0, &ch, 1);
-  ret = ret; //to avoid warning message
+  read(0, &ch, 1);
   return ch;
 }
 
 void resetch() {
-//Clear ch  
+//Clear ch
   term.c_cc[VMIN] = 0;
   tcsetattr(0, TCSANOW, &term);
   peek_character = 0;
-}
-/*------------------------------------------ */
-/* Read 1 character - echo defines echo mode */
-/*------------------------------------------ */
-char getch() {
-  struct termios t;
-  tcgetattr(0, &t);
-  tcflag_t old_flag = t.c_lflag;
-  t.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(0, TCSANOW, &t);
-  int     c = getchar();
-  t.c_lflag = old_flag;
-  tcsetattr(0, TCSANOW, &t);
-  return c;
 }
 
 /*----------------------------------*/
@@ -139,16 +141,16 @@ void screencol(int x) {
 /*-----------------------*/
 void resetAnsi(int x) {
   switch (x) {
-    case 0:			//reset all colors and attributes
+    case 0:         //reset all colors and attributes
       printf("%c[0m", 0x1b);
       break;
-    case 1:			//reset only attributes
+    case 1:         //reset only attributes
       printf("%c[20m", 0x1b);
       break;
-    case 2:			//reset foreg. colors and not attrib.
+    case 2:         //reset foreg. colors and not attrib.
       printf("%c[39m", 0x1b);
       break;
-    case 3:			//reset back. colors and not attrib.
+    case 3:         //reset back. colors and not attrib.
       printf("%c[49m", 0x1b);
       break;
     default:
@@ -179,3 +181,28 @@ void hidecursor() {
 void showcursor() {
   printf("\e[?25h");
 }
+
+/*--------------------------*/
+/* Set up terminal          */
+/*--------------------------*/
+
+//For code simplification purposes
+
+void init_term(){
+  hidecursor();
+  pushTerm();
+  resetch();
+  //Setup unicode  
+  setlocale(LC_ALL, "");
+}
+
+
+void close_term(){
+  showcursor();
+  resetTerm();
+  outputcolor(F_WHITE, B_BLACK);
+  screencol(B_BLACK);
+  resetAnsi(0);
+  printf("\n");
+}
+

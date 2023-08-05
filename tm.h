@@ -4,7 +4,7 @@
 Module to implement a millisecond TIMER in C.
 @author : Velorek
 @version : 1.0
-Last modified: 27/12/2020 + New module
+Last modified: 15/09/2021 + New technique + init timer
 ========================================================================
 */
 
@@ -30,5 +30,8 @@ typedef struct nTimer{
 
 /* Miliseconds timer */
 int timerC(NTIMER *mytimer1);
+void init_timer(NTIMER *mytimer, int ms);
+void stop_timer(NTIMER *mytimer);
+void resume_timer(NTIMER *mytimer);
 
 #endif

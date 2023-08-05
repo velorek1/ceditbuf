@@ -14,7 +14,8 @@ LAST MODIFIED : 14/04/2019 - Rename headers
 /*====================================================================*/
 
 #include <stdio.h>
-#include "uintf.h"
+#include "ui.h"
+#include "global.h"
 #include "fileb.h"
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
@@ -93,57 +94,6 @@ long checkFile(FILE * filePtr) {
   }
   return counterA;
 }
-
-/*-------------------*/
-/* Checks config file*/
-/*-------------------*/
-
-void checkConfigFile(int setValue) {
-  FILE   *fp;
-  int     ok = 0;
-  char    ch;
-
-  if(setValue == -1) {
-    if(file_exists(CONFIGFILE)) {
-      //If we open the program for the first time.
-      //Read config file
-      ok = openFile(&fp, CONFIGFILE, "r");
-      if(ok == 1) {
-	ch = getc(fp);
-	ch = ch - '0';
-	setColorScheme(ch);
-      } else {
-	printf("Error opening configfile. Setting to defaults.\n");
-	setColorScheme(0);
-      }
-      closeFile(fp);
-    } else {
-      //Create config file
-      ok = openFile(&fp, CONFIGFILE, "w");
-      if(ok == 1) {
-	fprintf(fp, "%d", 0);
-	setColorScheme(0);	//Create config file and set default color Scheme        
-      } else {
-	printf("Error creating config file. Setting to defaults.\n");
-	setColorScheme(0);
-      }
-      closeFile(fp);
-    }
-  } else {
-    //If we call the function from the menu.
-    //Set new value in config file
-    ok = openFile(&fp, CONFIGFILE, "w");
-    if(ok == 1) {
-      fprintf(fp, "%d", setValue);
-      //setColorScheme(setValue); //Create config file and set default color Scheme        
-    } else {
-      printf("Error creating config file. Setting to defaults.\n");
-      setColorScheme(0);
-    }
-    closeFile(fp);
-  }
-}
-
 
 /*-----------*/
 /* Open file */
