@@ -8,6 +8,13 @@
 #include "global.h" 
 #include "keyb.h"
 #include "edbuf.h"
+#include "listc.h"
+#include "ui.h"
+
+//Globals for main
+int     programStatus = 0;
+char    kglobal = 0;		// Global variable for menu animation
+OLDLISTCHOICE *mylist, data;
 
 //Prototypes
 void draw_screen();
@@ -20,17 +27,23 @@ void cleanScreenLine(long whereY);
 void cleanSection(long whereY, long start, int amount);
 void buffertoScreen(long startPoint, long activeline);
 wchar_t currentChar = 0;
+char horizontal_menu();
+void filemenu();
+void optionsmenu();
+void helpmenu();
+void drop_down(char *kglobal);
+void credits();
 
 void draw_screen(){
 //BASE SCREEN IS STORED IN SCREEN 2
      int i=0;
      if (screen1 != NULL) deleteList(&screen1);
-     if (screen2 != NULL) deleteList(&screen2);
+     //if (screen2 != NULL) deleteList(&screen2);
      //Init 2 : Create 2 Screens for a double buffer  approach  
      old_rows=new_rows;
      old_columns=new_columns;
      create_screen(&screen1);
-     create_screen(&screen2);
+     //create_screen(&screen2);
      //SCREEN 2
      screen_color(screen1, EDITAREACOL, EDITAREACOL, FILL_CHAR);
     //Failsafe just in case it can't find the terminal dimensions
@@ -86,7 +99,7 @@ void draw_screen(){
 
   dump_screen(screen1);
   //Save screen for later
-  copy_screen(screen2,screen1);
+  //copy_screen(screen2,screen1);
 }
 
 void cursor_tick(void){
@@ -146,19 +159,19 @@ wchar_t code_point;
     //for (int i=0; i<findEndline(tempLine);i++) write_ch(screen1, 10+i,16, code_point, B_RED, F_WHITE,1);
     //dump_screen(screen1);
    //Buffer pointer position
-    write_str(screen1, new_columns - 24, new_rows, "| R:        C:     ", STATUSBAR, STATUSMSG,1);
+    update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 10, new_rows, posBufX, STATUSBAR, STATUSMSG,1);
     write_num(screen1, new_columns - 20, new_rows, posBufY, STATUSBAR, STATUSMSG,1);
-    write_str(screen1, new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG,1);
+    update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
 }
+
 
 int main(){
 
 char ch=0;
 int keypressed = 0;
 int esc_key = 0;
-
 
     //Init Terminal
     init_term();
@@ -170,6 +183,8 @@ int esc_key = 0;
     //tempLine.linea[posBufX].specialChar = 0;
     //tempLine.linea[posBufX].attrib = EDIT_FORECOLOR; 
     do{    
+	 //end flag from any part of the program
+	 if (programStatus == ENDSIGNAL) break;
 	 //Time animation & resize window
 	  if (timerC(&timer2) == TRUE){
            _animation();
@@ -202,14 +217,7 @@ int esc_key = 0;
      if (screen1 != NULL) deleteList(&screen1);
      if (screen2 != NULL) deleteList(&screen2);
      //restore terminal
-     close_term();
-  printf("\n");
-  outputcolor(7, 0);
-  _printlist(&edBuf1);
-  printf("%ld:%ld\n", posBufX, posBufY);
-  printf("\n%ld\n",sizeof(&edBuf1));
-  _deletetheList(&edBuf1); //free edit Buffer
-     
+     credits();    
      return 0;
 }
 
@@ -222,7 +230,9 @@ int special_keys() {
    according to the terminal and expand the editor's possibilities.
    Eg: F2 can be either 27 79 81 or 27 91 91 82.
 */
-
+      //cursorY : position on screen
+      //posBufY : position in buffer
+ 
   int     esc_key = 0;
   char    chartrail[5];
     old_cursorX = cursorX;
@@ -240,9 +250,13 @@ int special_keys() {
     //FUNCTION KEYS : F1 - F4
     if(strcmp(chartrail, K_F2_TRAIL) == 0 ||
        strcmp(chartrail, K_F2_TRAIL2) == 0) {
-       
+      if(horizontal_menu() == K_ESCAPE) {
+	//Exit horizontal menu with ESC 3x
+	kglobal = K_ESCAPE;
+	//main_screen();
+      }       
       //  Drop-down menu loop 
-      //drop_down(&kglobal);  //animation
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_F3_TRAIL) == 0 ||
           strcmp(chartrail, K_F3_TRAIL2) == 0) {
     } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
@@ -275,11 +289,14 @@ int special_keys() {
  
     } else if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
       //Down-arrow key
-      if(cursorY < new_rows - 2) {
-        cursorY = cursorY + 1;
-        
+     //Check if there are more lines to go to
+      if (posBufY<_length(&edBuf1)){
+        if(cursorY < new_rows - 3) {
+          //stay put if we are are the end of the viewing area
+          cursorY = cursorY + 1;  
+        }
+        posBufY++;
       }
-      posBufY++;
     } else if(strcmp(chartrail, K_PAGEDOWN_TRAIL) == 0) {
       //Page Down key
      } else if(strcmp(chartrail, K_PAGEUP_TRAIL) == 0) {
@@ -288,14 +305,14 @@ int special_keys() {
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
-      //data.index=FILE_MENU;
-      //drop_down(&kglobal);  //animation
+      data.index=FILE_MENU;
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_ALT_P) == 0) {
-      //data.index=OPT_MENU;
-      //drop_down(&kglobal);  //animation
+      data.index=OPT_MENU;
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
-      //data.index=HELP_MENU;
-      //drop_down(&kglobal);  //animation
+      data.index=HELP_MENU;
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       //openFileHandler();    //Open file Dialog
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
@@ -314,14 +331,17 @@ int special_keys() {
       //}
       //refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_X) == 0) {
-      //if(fileModified == 1)
-    //exitp = confirmation(); //Shall we exit? Global variable!
-      //else
-    //exitp = EXIT_FLAG;
-    } 
+    /*  
+    if(fileModified == 1)
+      exitp = confirmation(); //Shall we exit? Global variable!
+      else
+    exitp = EXIT_FLAG;
+    } } 
+    */
+    }
     esc_key = 1;
-
   return esc_key;
+
 }
 
 /*
@@ -354,18 +374,20 @@ void linetoScreen(long whereY, VLINES tempLine){
 
    for (i=0; i<findEndline(tempLine); i++){
 	   attrib = tempLine.linea[i].attrib;  
-
-	if(tempLine.linea[i].specialChar != 0) {
-	  //Special char ? print the two values to screen buffer.
-          gotoxy(i+START_CURSOR_X+1, whereY+1);
-          outputcolor(attrib, EDITAREACOL);
-          printf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
-	} else {
-	  gotoxy(i+START_CURSOR_X+1, whereY+1);
-          outputcolor(attrib, EDITAREACOL);
-          printf("%c", tempLine.linea[i].ch);
-	}
-     }
+         //don't print beyond display!
+	 if (i+START_CURSOR_X < new_columns-1){
+	  if(tempLine.linea[i].specialChar != 0) {
+	    //Special char ? print the two values to screen buffer.
+            gotoxy(i+START_CURSOR_X+1, whereY+1);
+            outputcolor(attrib, EDITAREACOL);
+            printf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
+	  } else {
+	    gotoxy(i+START_CURSOR_X+1, whereY+1);
+            outputcolor(attrib, EDITAREACOL);
+            printf("%c", tempLine.linea[i].ch);
+  	  }
+       }
+   }
 }
 
 void cleanScreenLine(long whereY)
@@ -431,8 +453,8 @@ int endLine=0;
 	    read_accent(&newch, accentchar);
 	    newch = accentchar[1];
       }
-
-      cursorX++;
+      //check if we are at the limit of our display to print chars
+      if (cursorX < new_columns-2) cursorX++;
       
       //SYNTAX HIGHLIGHTING DEMO
       //Highlight numbers in GREEN
@@ -530,7 +552,7 @@ int endLine=0;
       //Add line to buffer
       //Display limit rows
       update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
-      if (cursorY<new_rows - 2) cursorY++;
+      if (cursorY<new_rows - 3) cursorY++;
       cursorX = START_CURSOR_X;
       //If buffer position pointer is at the end create a new empty line
       if (_length(&edBuf1) <= posBufY){
@@ -701,3 +723,277 @@ int endLine=0;
 
    return 0; 
 }
+
+char horizontal_menu() {
+  char    temp_char;
+  kglobal=-1;
+  //cleanStatusBar();
+  write_str(screen1, 1, new_rows, STATUS_BAR_MSG3, STATUSBAR, STATUSMSG,1);
+  loadmenus(mylist, HOR_MENU);
+  temp_char = start_hmenu(&data);
+  free_list(mylist);
+  write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
+  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
+  write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
+  write_str(screen1, 15, 1, "H", MENU_PANEL, F_RED,1);
+  write_str(screen1,0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
+  //dump_screen(screen1);
+  return temp_char;
+}
+
+/*----------------------*/
+/* Drop_Down Menu Loop  */
+/*----------------------*/
+
+void drop_down(char *kglobal) {
+/* 
+   Drop_down loop animation. 
+   K_LEFTMENU/K_RIGHTMENU -1 is used when right/left arrow keys are used
+   so as to break vertical menu and start the adjacent menu
+   kglobal is changed by the menu functions.
+*/
+  do {
+    if(*kglobal == K_ESCAPE) {
+      //Exit drop-down menu with ESC           
+      *kglobal = 0;
+      break;
+    }
+    if(data.index == FILE_MENU) {
+      filemenu();
+      if(*kglobal == K_LEFTMENU) {
+	data.index = OPT_MENU;
+      }
+      if(*kglobal == K_RIGHTMENU) {
+	data.index = HELP_MENU;
+      }
+    }
+    if(data.index == OPT_MENU) {
+      optionsmenu();
+      if(*kglobal == K_LEFTMENU) {
+	data.index = HELP_MENU;
+      }
+      if(*kglobal == K_RIGHTMENU) {
+	data.index = FILE_MENU;
+      }
+    }
+    if(data.index == HELP_MENU) {
+      helpmenu();
+      if(*kglobal == K_LEFTMENU) {
+	data.index = FILE_MENU;
+      }
+      if(*kglobal == K_RIGHTMENU) {
+	data.index = OPT_MENU;
+      }
+    }
+  } while(*kglobal != K_ENTER);
+}
+
+/*-------------------------*/
+/* Display File menu       */
+/*-------------------------*/
+
+void filemenu() {  
+  //cleanStatusBar();
+  if (screen2 != NULL)
+	deleteList(&screen2);
+  create_screen(&screen2);
+
+  copy_screen(screen2,screen1);
+  data.index = OPTION_NIL;
+  write_str(screen1,1, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
+  loadmenus(mylist, FILE_MENU);
+  write_str(screen1,0, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1,1);
+  draw_window(screen1,0, 2, 12, 8, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
+  kglobal = start_vmenu(&data);
+  //close_window();
+  write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
+  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
+  write_str(screen1, 7, 1, "p", MENU_PANEL, F_RED,1);
+  write_str(screen1, 15, 1, "H", MENU_PANEL, F_RED,1);
+  //dump_screen(screen1);
+  free_list(mylist);
+
+  if(data.index == OPTION_1) {
+    //New file option
+    //newDialog(currentFile);
+    //Update new global file name
+    //refresh_screen(-1);
+     //programStatus  = ENDSIGNAL;
+  }
+  if(data.index == OPTION_2) {
+    //External Module - Open file dialog.
+    //openFileHandler();
+    //flush_editarea();
+  }
+  if(data.index == OPTION_3) {
+    //Save option
+  }
+  if(data.index == OPTION_4) {
+    //Save as option  
+      //saveasDialog(currentFile);
+      //refresh_screen(-1);
+  }
+
+  if(data.index == OPTION_5) {
+    //Exit option
+    //if(fileModified == 1)
+      //exitp = confirmation();	//Shall we exit? Global variable!
+    //else
+      programStatus  = ENDSIGNAL;
+  }
+  data.index = OPTION_NIL;
+  //cleanStatusBar();
+   //Restore message in status bar
+   //kglobal= K_ESCAPE;
+   write_str(screen1, 1, new_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,1);
+   //copy_screen(screen1,screen2);
+   //dump_screen(screen1);
+  xor_update(screen2,screen1);
+  copy_screen(screen1,screen2);
+  if (screen2 != NULL)
+	deleteList(&screen2);
+ 
+}
+
+/*--------------------------*/
+/* Display Options menu     */
+/*--------------------------*/
+
+void optionsmenu() {
+  //int  setColor;
+  if (screen2 != NULL)
+	deleteList(&screen2);
+  create_screen(&screen2);
+
+  copy_screen(screen2,screen1);
+ 
+  data.index = OPTION_NIL;
+  write_str(screen1, 0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
+  loadmenus(mylist, OPT_MENU);
+  write_str(screen1,6, 0, "Options", MENU_SELECTOR, MENU_FOREGROUND1,1);
+  draw_window(screen1,6, 2, 19, 6, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
+  kglobal = start_vmenu(&data);
+  //close_window();
+  write_str(screen1,0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
+  write_str(screen1,0, 1, "F", MENU_PANEL, F_RED,1);
+  write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
+  write_str(screen1,15, 1, "H", MENU_PANEL, F_RED,1);
+  //dump_screen(screen1);
+
+  free_list(mylist);
+  if(data.index == OPTION_1) {
+    //File Info
+    //fileInfoDialog();
+  }
+  if(data.index == OPTION_3) {
+    //Set Colors
+  /*  setColor = colorsWindow(mylist,COLORSWTITLE);
+    setColorScheme(setColor);
+    checkConfigFile(setColor);	//save new configuration in config file
+    *///refresh_screen(1);
+  }
+  data.index = OPTION_NIL;
+  //Restore message in status bar
+  //cleanStatusBar();
+  write_str(screen1, 1, new_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,1);
+   //copy_screen(screen1,screen2);
+   //dump_screen(screen1);
+  xor_update(screen2,screen1);
+  copy_screen(screen1,screen2);
+  if (screen2 != NULL)
+	deleteList(&screen2);
+ 
+}
+
+/*--------------------------*/
+/* Display Help menu        */
+/*--------------------------*/
+
+void helpmenu() { 
+  if (screen2 != NULL)
+	deleteList(&screen2);
+  create_screen(&screen2);
+
+  copy_screen(screen2,screen1);
+ 
+  data.index = OPTION_NIL;
+  write_str(screen1, 1, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
+  loadmenus(mylist, HELP_MENU);
+  write_str(screen1, 15, 1, "Help", MENU_SELECTOR, MENU_FOREGROUND1,1);
+  draw_window(screen1,15, 2, 25, 5, MENU_PANEL, MENU_FOREGROUND0, 0,1,0,1,1);
+  kglobal = start_vmenu(&data);
+  write_str(screen1, 0,1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
+  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
+  write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
+  write_str(screen1,15, 1, "H", MENU_PANEL, F_RED,1);
+  //dump_screen(screen1);
+  free_list(mylist);
+  if(data.index == OPTION_1) {
+    //About info
+    //help_info();
+  }
+  if(data.index == OPTION_2) {
+    //About info
+    //about_info();
+  }
+  data.index = -1;
+  //Restore message in status bar
+  //cleanStatusBar();
+  write_str(screen1, 1, new_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,1);
+  xor_update(screen2,screen1);
+  copy_screen(screen1,screen2);
+  if (screen2 != NULL)
+	deleteList(&screen2);
+ 
+}
+
+
+/*---------*/
+/* Credits */
+/*---------*/
+
+void credits() {
+  //Frees memory and displays goodbye message 
+  //Free selected path item/path from opfiledialog 
+  size_t i; //to be compatible with strlen
+  char auth[27] ="Coded by v3l0r3k 2019-2024";  
+  //free_buffer();
+  close_term();			//restore terminal settings from failsafe
+  showcursor();
+  resetAnsi(0);
+  screencol(0);
+  outputcolor(7, 0);
+ 
+  printf(cedit_ascii_1);
+  printf(cedit_ascii_2);
+  printf(cedit_ascii_3);
+  printf(cedit_ascii_4);
+  printf(cedit_ascii_5);
+  printf(cedit_ascii_6);
+
+  outputcolor(0, 90);
+  printf("\n%s",auth);
+  outputcolor(0, 37);
+  timer2.ms=10;
+  timer2.ticks=0;
+  i=0;
+
+  outputcolor(0, 97);
+  do{
+    if (timerC(&timer2) == 1) { 
+       gotoxy(i,8);
+       if (i==strlen(auth)) outputcolor(0,93);
+       if (i<10 || i>16) 
+	if (i<=strlen(auth)) printf("%c", auth[i-1]);
+       printf("\n");
+       i++;
+     }
+    } while (timer2.ticks <30);
+ _printlist(&edBuf1);
+  printf("%ld:%ld\n", posBufX, posBufY);
+  printf("\n%ld\n",sizeof(&edBuf1));
+  _deletetheList(&edBuf1); //free edit Buffer
+  resetAnsi(0);
+ // close_term();
+}
+

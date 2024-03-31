@@ -92,6 +92,36 @@ extern int WINDOW_TITLEF;
 #define START_CURSOR_X 1
 #define START_CURSOR_Y 2
 
+//MENU CONSTANTS
+#define HOR_MENU -1
+#define FILE_MENU 0
+#define OPT_MENU 1
+#define HELP_MENU 2
+#define YESNO_MENU 3
+#define OK_MENU 4
+#define MAX_FILENAME 100
+
+//DROP-DOWN MENUS
+#define OPTION_1 0
+#define OPTION_2 1
+#define OPTION_3 2
+#define OPTION_4 3
+#define OPTION_5 4
+#define OPTION_NIL -1		//Reset option
+#define CONFIRMATION 1
+#define K_LEFTMENU -1		//Left arrow key pressed while in menu
+#define K_RIGHTMENU -2		//Right arrow key pressed while in menu
+
+//MENU CONSTANTS
+#define HOR_MENU -1
+#define FILE_MENU 0
+#define OPT_MENU 1
+#define HELP_MENU 2
+#define YESNO_MENU 3
+#define OK_MENU 4
+#define MAX_FILENAME 100
+#define OK_MENU2 5
+#define COLORS_MENU 6
 
 //extern char aboutMSG[7][MAXLINE];
 

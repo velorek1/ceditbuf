@@ -189,4 +189,57 @@ void window(SCREENCELL *screen1, int x1, int y1, int x2, int y2, int backcolor,
   }
  // dump_screen(screen1);
 }
+/*--------------------------------------------*/
+/* Load current menu into circular linked list*/
+/*--------------------------------------------*/
+
+void loadmenus(OLDLISTCHOICE * mylist, int choice) {
+  int     rows, columns;
+  get_terminal_dimensions(&rows, &columns);
+
+  if(choice == HOR_MENU) {
+    add_item(mylist, "File", 0, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Options", 6, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Help", 15, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+
+  if(choice == FILE_MENU) {
+    add_item(mylist, "New", 2, 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Open", 2, 4, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Save", 2, 5, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Save as..", 2, 6,MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Exit", 2, 7, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+  if(choice == OPT_MENU) {
+    add_item(mylist, "File Info.", 8, 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Find...", 8, 4, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Colors", 8, 5, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+  if(choice == HELP_MENU) {
+    add_item(mylist, "Help...", 17, 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "About", 17, 4, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+
+  if(choice == YESNO_MENU) {
+    add_item(mylist, "[YES]", (columns / 2) - 11, (rows / 2) + 2, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[NO]", (columns / 2) - 3, (rows / 2) + 2,  MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[CANCEL]", (columns / 2) + 4, (rows / 2) + 2,  MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+  if(choice == OK_MENU) {
+    add_item(mylist, "[OK]", (columns / 2) - 1, (rows / 2) + 2, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+  if(choice == OK_MENU2) {
+    add_item(mylist, "[OK]", (columns / 2) - 1, (rows / 2) + 3, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+  if(choice == COLORS_MENU) {
+    add_item(mylist, "C-Edit Theme", (columns / 2) - 6, (rows / 2) - 2, 
+        MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Classic Theme", (columns / 2) - 6, (rows / 2) -1, 
+        MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Dark Theme", (columns / 2) - 6, (rows / 2), 
+        MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+
+}
+
 

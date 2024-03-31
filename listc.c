@@ -7,6 +7,8 @@ Module to make a circular linked list to make a selection menu in C.
 Last modified : 11/02/2019 - Switch to readch() instead of readch()
                 06/04/2019 - Fixed memory errors and leaks. 
 		14/04/2019 - Rename headers
+		August 2023 - Integrated with lynx and new libraries
+		              for compatibility
 ======================================================================
 */
 
@@ -19,7 +21,8 @@ Last modified : 11/02/2019 - Switch to readch() instead of readch()
 #include "rterm.h"
 #include "scbuf.h"
 #include "keyb.h"
-
+#include "global.h"
+#include "tm.h"
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
 /*====================================================================*/
@@ -27,7 +30,7 @@ Last modified : 11/02/2019 - Switch to readch() instead of readch()
 //DROP-DOWN MENU VALUES
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
 #define K_RIGHTMENU -2		//Right arrow key pressed while in menu
-#define ESC_KEY 1
+//#define ESC_KEY 1
 #define EXIT_FLAG 1
 
 //DIRECTIONS
@@ -40,7 +43,7 @@ Last modified : 11/02/2019 - Switch to readch() instead of readch()
 /* TYPEDEF DEFINITIONS                                                */
 /*====================================================================*/
 
-typedef struct _listchoice {
+typedef struct _oldlistchoice {
   int     index;		// Item number
   int     backcolor0;		// Back and Fore colors when not selected
   int     forecolor0;
@@ -49,18 +52,18 @@ typedef struct _listchoice {
   int     wherex;		// Position of the item
   int     wherey;
   char   *item;			// Item string
-  struct _listchoice *next;	// Pointer to next item
-  struct _listchoice *back;	// Pointer to previous item.
-} LISTCHOICE;
+  struct _oldlistchoice *next;	// Pointer to next item
+  struct _oldlistchoice *back;	// Pointer to previous item.
+} OLDLISTCHOICE;
 
 /*====================================================================*/
 /* GLOBAL VARIABLES                                                   */
 /*====================================================================*/
 
-LISTCHOICE *head = NULL;
-LISTCHOICE *tail = NULL;
-LISTCHOICE *former = NULL;
-LISTCHOICE *current = NULL;
+OLDLISTCHOICE *head = NULL;
+OLDLISTCHOICE *tail = NULL;
+OLDLISTCHOICE *former = NULL;
+OLDLISTCHOICE *current = NULL;
 
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
@@ -70,12 +73,12 @@ LISTCHOICE *current = NULL;
 /*Add new item*/
 /*------------*/
 
-void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
+void add_item(OLDLISTCHOICE * list_identifier, char *str, int x, int y,
 	      int bcolor0, int fcolor0, int bcolor1, int fcolor1) {
-  LISTCHOICE *newp;
+  OLDLISTCHOICE *newp;
   if(head == NULL && list_identifier == NULL) {
     //Reserve memory
-    list_identifier = (LISTCHOICE *) malloc(sizeof(LISTCHOICE));
+    list_identifier = (OLDLISTCHOICE *) malloc(sizeof(OLDLISTCHOICE));
     head = list_identifier;
     tail = list_identifier;
 
@@ -94,7 +97,7 @@ void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
   } else {
     //Circular list structure
     former = tail;		//pointer to previous item
-    newp = (LISTCHOICE *) malloc(sizeof(LISTCHOICE));
+    newp = (OLDLISTCHOICE *) malloc(sizeof(OLDLISTCHOICE));
     former->next = newp;	//previous item points to current item
     newp->back = former;	//new item back points to previous item
     tail = newp;		//tail always points to the last item
@@ -122,8 +125,8 @@ void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
 void free_list() 
 { 
    /* deref head_ref to get the real head */
-   LISTCHOICE *cur; 
-   LISTCHOICE *back; 
+   OLDLISTCHOICE *cur; 
+   OLDLISTCHOICE *back; 
    cur = tail;
    while (cur != head)  
    { 
@@ -142,8 +145,8 @@ void free_list()
    tail = NULL;
 } 
 /*
-void free_list(LISTCHOICE * list_identifier) {
-  LISTCHOICE *aux, *p;
+void free_list(OLDLISTCHOICE * list_identifier) {
+  OLDLISTCHOICE *aux, *p;
   aux = tail;
   while (aux != head->back) {
     p = aux;
@@ -169,14 +172,14 @@ in init_list.
 until the auxiliary pointer reaches the first item again
 First item is equal to tail->next.
 */
-  LISTCHOICE *aux;
+  OLDLISTCHOICE *aux;
   aux = head;
   do {
-    write_str(aux->wherex, aux->wherey, aux->item, aux->backcolor0,
-	      aux->forecolor0);
+    write_str(screen1, aux->wherex, aux->wherey, aux->item, aux->backcolor0,
+	      aux->forecolor0,1);
     aux = aux->next;
   } while(aux != tail->next);
-  update_screen();
+  //dump_screen(screen1);
 
 }
 
@@ -184,10 +187,11 @@ First item is equal to tail->next.
 /*Unmark previous item and mark next item*/
 /*---------------------------------------*/
 
-void move_selector(LISTCHOICE * aux, short direction) {
+void move_pointer(OLDLISTCHOICE * aux, short direction) {
   //Unmark previous iten
-  write_str(aux->wherex, aux->wherey, aux->item, aux->backcolor0,
-	    aux->forecolor0);
+  write_str(screen1, aux->wherex, aux->wherey, aux->item, aux->backcolor0,
+	    aux->forecolor0,1);
+  //dump_screen(screen1);
   //Highlight current item
   switch (direction) {
     case DIR_UP:
@@ -203,18 +207,18 @@ void move_selector(LISTCHOICE * aux, short direction) {
       *aux = *aux->back;
       break;			//Go to next item
   }
-  write_str(aux->wherex, aux->wherey, aux->item, aux->backcolor1,
-	    aux->forecolor1);
-  update_screen();
+  write_str(screen1, aux->wherex, aux->wherey, aux->item, aux->backcolor1,
+	    aux->forecolor1,1);
+  //dump_screen(screen1);
 }
 
 /*------------------------------------*/
 /*Starts the selection menu - Vertical*/
 /*------------------------------------*/
 
-char start_vmenu(LISTCHOICE * list_data) {
+char start_vmenu(OLDLISTCHOICE * list_data) {
   char    ch;
-  LISTCHOICE aux;
+  OLDLISTCHOICE aux;
   int     exitwhile = 0;
   int     esc_key = 0;
   char chartrail[5];
@@ -223,12 +227,16 @@ char start_vmenu(LISTCHOICE * list_data) {
 
   //Highlight first item on the list
   aux = *tail;			//Auxiliary variable points to last item
-  move_selector(&aux, DIR_DOWN);	//Move down to point to highlight first item.
+  move_pointer(&aux, DIR_DOWN);	//Move down to point to highlight first item.
 
-  ch = 0;			//init ch value
+  ch = 0;
+  init_timer(&timer2,TIMER_SPEED2);
+  timer2.ticks = 0;
+  //init ch value
   while(ch != K_ENTER)		// escape key or enter
   {
-   keypressed = kbhit();
+   keypressed = kbhit(10);
+   if (timerC(&timer2) == TRUE) _animation();
    if (keypressed == 1){
       ch = readch();
       keypressed = 0;
@@ -238,11 +246,11 @@ char start_vmenu(LISTCHOICE * list_data) {
         read_keytrail(chartrail);	// read key again for arrow key combinations
         esc_key = ESC_KEY;
         if(strcmp(chartrail, K_UP_TRAIL) == 0) {
-	  move_selector(&aux, DIR_UP);
+	  move_pointer(&aux, DIR_UP);
 	  esc_key = 0;
 	}
 	if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
-	  move_selector(&aux, DIR_DOWN);
+	  move_pointer(&aux, DIR_DOWN);
 	  esc_key = 0;
 	}
         if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
@@ -267,7 +275,7 @@ char start_vmenu(LISTCHOICE * list_data) {
   if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
-    resetch();
+    //resetch();
   }
   return ch;			// return the key or code pressed
 
@@ -276,23 +284,25 @@ char start_vmenu(LISTCHOICE * list_data) {
 /*--------------------------------------*/
 /*Starts the selection menu - horizontal*/
 /*--------------------------------------*/
-char start_hmenu(LISTCHOICE * list_data) {
+char start_hmenu(OLDLISTCHOICE * list_data) {
   char    ch;
   //int     exitloop = 0;
+  int     esc_key = 0;
   unsigned keypressed = 0 ;
   char chartrail[5];
-  LISTCHOICE aux;
+  OLDLISTCHOICE aux;
 
   display_list(list_data);	//display whole list
 
   //Highlight first item on the list
   aux = *tail;			//Auxiliary variable points to last item
-  move_selector(&aux, DIR_LEFT);	//Move down to point to highlight first item.
+  move_pointer(&aux, DIR_LEFT);	//Move down to point to highlight first item.
 
   ch = 0;			//init ch value
   while(ch != K_ENTER)		// escape key or enter
   {
-     keypressed = kbhit();
+     keypressed = kbhit(10);
+     if (timerC(&timer2) == TRUE) _animation();
      if (keypressed == 1){
       ch = readch();
       keypressed = 0;
@@ -300,16 +310,15 @@ char start_hmenu(LISTCHOICE * list_data) {
       if(ch == K_ESCAPE)		// escape key
       {
         read_keytrail(chartrail);	// read key again for arrow key combinations
-        //esc_key = ESC_KEY;
+        esc_key = ESC_KEY;
         if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
-	  move_selector(&aux, DIR_LEFT);
-	  //esc_key = 0;
+	  move_pointer(&aux, DIR_LEFT);
+	  esc_key = 0;
 	}
         if(strcmp(chartrail, K_LEFT_TRAIL) == 0) {
-	  move_selector(&aux, DIR_RIGHT);
-	  //esc_key = 0;
+	  move_pointer(&aux, DIR_RIGHT);
+	  esc_key = 0;
 	}
-  
 //    if(exitloop == EXIT_FLAG)
   //    break;
 //	default:
@@ -317,13 +326,18 @@ char start_hmenu(LISTCHOICE * list_data) {
 //	  break;
       }
     
-       if (ch == K_TAB) move_selector(&aux, DIR_LEFT);
+       if (ch == K_TAB) move_pointer(&aux, DIR_LEFT);
     }
+     if(esc_key == ESC_KEY) {
+      break;
+    }
+     
   }
+
   if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
-    resetch();
+    //resetch();
   }
   return ch;
 }

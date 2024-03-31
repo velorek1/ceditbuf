@@ -13,7 +13,9 @@ Last modified: 06/02/2022
 #define MAX_TEXT 150
 
 #include "scbuf.h"
+#include "listc.h"
 #include <stdio.h>
+
 int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
         char *label, char text[MAX_TEXT], int backcolor,
         int labelcolor, int textcolor, BOOL raw, BOOL locked);
@@ -21,6 +23,7 @@ int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
 void window(SCREENCELL *screen1, int x1, int y1, int x2, int y2, int backcolor,
          int bordercolor, int titlecolor, int border, int title, int shadow);
 
+void loadmenus(OLDLISTCHOICE * mylist, int choice);
 #endif
 
 

@@ -26,7 +26,7 @@ double linked list.
 /* TYPE DEFINITIONS                                                   */
 /*====================================================================*/
 
-typedef struct _listchoice {
+typedef struct _oldlistchoice {
   int     index;		// Item number
   int     backcolor0;		// Back and Fore colors when not selected
   int     forecolor0;
@@ -37,18 +37,18 @@ typedef struct _listchoice {
   char   *item;			// Item string
   struct _listchoice *next;	// Pointer to next item
   struct _listchoice *back;	// Pointer to previous item.
-} LISTCHOICE;
+} OLDLISTCHOICE;
 
 /*====================================================================*/
 /* FUNCTION PROTOTYPES                                                */
 /*====================================================================*/
 
-void    add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
+void    add_item(OLDLISTCHOICE * list_identifier, char *str, int x, int y,
 		 int bcolor0, int fcolor0, int bcolor1, int fcolor1);
 void    free_list();
 void    display_list();
-char    start_vmenu(LISTCHOICE * list_data);
-char    start_hmenu(LISTCHOICE * list_data);
-void    move_selector(LISTCHOICE * aux, short direction);
+char    start_vmenu(OLDLISTCHOICE * list_data);
+char    start_hmenu(OLDLISTCHOICE * list_data);
+void    move_pointer(OLDLISTCHOICE * aux, short direction);
 
 #endif
