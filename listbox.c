@@ -2,7 +2,9 @@
 /* +ListBox with double linked list and selection menu in C with
  * horizontal scroll.
    +Scroll function added. 
-   Last modified : 06/11/2022
+   Last modified : 01/04/2024 + Horizontal option implementation started
+   			      + ESC_KEY added
+			      - Pending: add X,Y to item
    Coded by Velorek. Raw output
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -25,6 +27,9 @@
 int double_escape=0;
 int newrows=0, newcolumns=0;
 int listrows=0, listcolumns=0;
+unsigned orientation = VERTICAL;
+char KTRAIL0[5]={0};
+char KTRAIL1[5]={0};
 
 /* --------------------- */
 /* Dynamic List routines */
@@ -162,6 +167,7 @@ void displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
 {
  size_t i=0;
  wchar_t newchar=0;
+ resetAnsi(0);
   switch (select) {
 
     case SELECT_ITEM:
@@ -345,10 +351,23 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
 	      //Animation in global.c
              if (_animation() == -1) {scrollData->itemIndex = -1;double_escape = 1; break;}
         }
-  
-    keypressed = kbhit(10);
+
+    //check listbox orientation and change keys
+    if (orientation == VERTICAL){
+	strcpy(KTRAIL0, K_UP_TRAIL);
+	strcpy(KTRAIL1, K_DOWN_TRAIL);
+     }
+    else
+    {
+	strcpy(KTRAIL1, K_RIGHT_TRAIL);
+	strcpy(KTRAIL0, K_LEFT_TRAIL);
+    }
+
+    keypressed = kbhit(1);
     if (keypressed == 1)
-    ch = readch();
+      ch = readch();
+    else
+      ch = 0;
     //if enter key pressed - break loop
     if(ch == K_ENTER)
       control = CONTINUE_SCROLL;	//Break the loop
@@ -359,69 +378,99 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
 	  break;
      }
  
-    //Check arrow keys
-    if(ch == K_ESCAPE)		// escape key
-    {
-      read_keytrail(chartrail);
-     if (strcmp(chartrail, K_ALT_X) == 0){
-	      break;
-      }
-      if (strcmp(chartrail, K_UP_TRAIL) == 0){
-	// escape key + A => arrow key up
-	  //Move selector up
-	  scrollData->scrollDirection = UP_SCROLL;
-	  continueScroll = move_selector(&aux, scrollData);
-	  //Break the loop if we are scrolling
-	  if(scrollData->scrollActive == SCROLL_ACTIVE
-	     && continueScroll == 1) {
-	    control = CONTINUE_SCROLL;
-	    //Update data
-	    scrollData->currentListIndex =
-		scrollData->currentListIndex - 1;
-	    scrollData->selector = scrollData->wherey;
-	    scrollData->item = aux->item;
-	    scrollData->itemIndex = aux->index;
-	    //Return value
-	    ch = control;
-	  }
-	}  
-       // escape key + B => arrow key down
-      if (strcmp(chartrail, K_DOWN_TRAIL) == 0){
-	  //Move selector down
-	  scrollData->scrollDirection = DOWN_SCROLL;
-	  continueScroll = move_selector(&aux, scrollData);
-	  //Break the loop if we are scrolling
-	  if(scrollData->scrollActive == SCROLL_ACTIVE
-	     && continueScroll == 1) {
-	    control = CONTINUE_SCROLL;
-	    //Update data  
-	    scrollData->currentListIndex =
-		scrollData->currentListIndex + 1;
-	    scrollData->selector = scrollData->wherey;
-	    scrollData->item = aux->item;
-	    scrollData->itemIndex = aux->index;
-	    scrollData->scrollDirection = DOWN_SCROLL;
-	  }
-	  //Return value  
-	  ch = control;
+
+		if (ch == K_ESCAPE)	// escape key
+		{
+			strcpy(chartrail, "\0");
+			read_keytrail(chartrail);
+
+			if (chartrail[0] == K_ESCAPE && chartrail[1] == 0) {
+				double_escape = 1;
+				scrollData->itemIndex = -1;
+				break;
+			}
+			if (strcmp(chartrail, K_ALT_X) == 0) {
+				break;
+			}
+			if (strcmp(chartrail, KTRAIL0) == 0) {
+				// escape key + A => arrow key up
+				//Move selector up
+				scrollData->scrollDirection = UP_SCROLL;
+				continueScroll =
+				    move_selector(&aux, scrollData);
+				//Break the loop if we are scrolling
+				if (scrollData->scrollActive == SCROLL_ACTIVE
+				    && continueScroll == 1) {
+					control = CONTINUE_SCROLL;
+					//Update data
+					scrollData->currentListIndex =
+					    scrollData->currentListIndex - 1;
+					scrollData->selector =
+					    scrollData->wherey;
+					scrollData->item = aux->item;
+					scrollData->itemIndex = aux->index;
+					//Return value
+					ch = control;
+				}
+			}
+			// escape key + B => arrow key down
+			if (strcmp(chartrail, KTRAIL1) == 0) {
+				//Move selector down
+				scrollData->scrollDirection = DOWN_SCROLL;
+				continueScroll =
+				    move_selector(&aux, scrollData);
+				//Break the loop if we are scrolling
+				if (scrollData->scrollActive == SCROLL_ACTIVE
+				    && continueScroll == 1) {
+					control = CONTINUE_SCROLL;
+					//Update data
+					scrollData->currentListIndex =
+					    scrollData->currentListIndex + 1;
+					scrollData->selector =
+					    scrollData->wherey;
+					scrollData->item = aux->item;
+					scrollData->itemIndex = aux->index;
+					scrollData->scrollDirection =
+					    DOWN_SCROLL;
+				}
+				//Return value
+				ch = control;
+			}
+
+		}
 	}
-      }
-    }
 
-  if (ch == K_ENTER || ch == K_ENTER2)		// enter key
-  {
-    //Pass data of last item selected
-    scrollData->item = aux->item;
-    scrollData->itemIndex = aux->index;
-  }
-  return ch;
+	if (ch == K_ENTER || ch == K_ENTER2)	// enter key
+	{
+		//Pass data of last item selected
+		scrollData->item = aux->item;
+		scrollData->itemIndex = aux->index;
+	}
+	return ch;
 }
-
+void resetScrollData(SCROLLDATA *scrollData)
+{
+	scrollData->scrollActive = 0;	//To know whether scroll is active or not.
+	scrollData->scrollLimit = 0;	//Last index for scroll.
+	scrollData->listLength = 0;	//Total no. of items in the list
+	scrollData->currentListIndex = 0;	//Pointer to new sublist of items when scrolling.
+	scrollData->displayLimit = 0;	//No. of elements to be displayed.
+	scrollData->selectorLimit = 15;	//No. of chars per item display
+	scrollData->scrollDirection = 0;	//To keep track of scrolling Direction.
+	scrollData->selector = 0;	//Y++
+	scrollData->wherex = 0;
+	scrollData->wherey = 0;
+	scrollData->backColor0 = 0;	//0 unselected; 1 selected
+	scrollData->foreColor0 = 0;
+	scrollData->backColor1 = 0;
+	scrollData->foreColor1 = 0;
+	scrollData->itemIndex = 0;
+}
 char listBox(LISTCHOICE * head,
 	     unsigned whereX, unsigned whereY,
 	     SCROLLDATA * scrollData, unsigned bColor0,
 	     unsigned fColor0, unsigned bColor1, unsigned fColor1,
-	     unsigned displayLimit,unsigned locked) {
+	     unsigned displayLimit,unsigned listorientation, unsigned locked) {
 
   unsigned list_length = 0;
   //unsigned currentIndex = 0;
@@ -431,21 +480,8 @@ char listBox(LISTCHOICE * head,
   LISTCHOICE *aux=NULL;
  //Init values
   double_escape=0;
-  scrollData->scrollActive=0;    //To know whether scroll is active or not.
-  scrollData->scrollLimit=0;     //Last index for scroll.
-  scrollData->listLength=0;      //Total no. of items in the list
-  scrollData->currentListIndex=0;    //Pointer to new sublist of items when scrolling.
-  scrollData->displayLimit=0;    //No. of elements to be displayed.
-  scrollData->scrollDirection=0; //To keep track of scrolling Direction.
-  scrollData->selector=0;        //Y++
-  scrollData->wherex=0;
-  scrollData->wherey=0;
-  scrollData->backColor0=0;      //0 unselected; 1 selected
-  scrollData->foreColor0=0;
-  scrollData->backColor1=0;
-  scrollData->foreColor1=0;
-  scrollData->itemIndex=0;
- 
+  resetScrollData(scrollData);
+  orientation = listorientation;
  // Query size of the list
   list_length = query_length(&head) + 1;
 
@@ -491,9 +527,17 @@ if (locked == LOCKED) {
     /*  gotoxy(6, 4);
       printf("Current List Index: %d:%d\n", scrollData->currentListIndex,
 	     aux->index); */
-      ch = selectorMenu(aux, scrollData);
-     if (double_escape==1) {scrollData->itemIndex = -1; locked=FALSE; break;}
-     if (_animation() == -1) {scrollData->itemIndex =-1; double_escape = 1; break;}
+        ch = selectorMenu(aux, scrollData);
+	if (double_escape == 1) {
+	  scrollData->itemIndex = -1;
+	  locked = FALSE;
+	  break;
+	}
+	if (_animation() == -1) {
+	  scrollData->itemIndex = -1;
+	  double_escape = 1;
+	   break;
+	}   
     } while(ch != K_ENTER);
 
   } else {

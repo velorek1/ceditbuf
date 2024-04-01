@@ -32,6 +32,8 @@ Last modified: 26/12/2022
 #define CIRCULAR_INACTIVE 0
 #define LOCKED 1
 #define NOT_LOCKED 0
+#define VERTICAL 0
+#define HORIZONTAL 1
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
@@ -84,7 +86,7 @@ LISTCHOICE *newitem(char *text);
 char    listBox(LISTCHOICE * selector, unsigned whereX, unsigned whereY,
 		SCROLLDATA * scrollData, unsigned bColor0,
 		unsigned fColor0, unsigned bColor1, unsigned fColor1,
-		unsigned displayLimit,unsigned locked);
+		unsigned displayLimit,unsigned listorientation, unsigned locked);
 void    loadlist(LISTCHOICE * head, SCROLLDATA * scrollData,
 		 unsigned indexAt);
 
@@ -96,7 +98,7 @@ int     query_length(LISTCHOICE ** head);
 int     move_selector(LISTCHOICE ** head, SCROLLDATA * scrollData);
 char    selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData);
 void    displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select);
-
+void    resetScrollData(SCROLLDATA *scrollData);
 
 /*====================================================================*/
 /* FUNCTION PROTOTYPES                                                */
