@@ -35,7 +35,7 @@ int WINDOW_TITLEB = B_BLACK;
 int WINDOW_TITLEF = F_WHITE;
 
 
-int     new_rows = 0, new_columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimensions
+int new_rows = 0, new_columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimensions
 int cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y;
 int old_cursorX = START_CURSOR_X, old_cursorY = START_CURSOR_Y;
 long posBufX = 0, posBufY = 0;

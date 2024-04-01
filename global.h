@@ -125,7 +125,7 @@ extern int WINDOW_TITLEF;
 
 //extern char aboutMSG[7][MAXLINE];
 
-extern int     new_rows, new_columns, old_rows, old_columns;	// Terminal dimensions
+extern int new_rows, new_columns, old_rows, old_columns;	// Terminal dimensions
 extern int cursorX, cursorY; //position on screen X:[0, columns -2] Y:[0, rows-3]
 extern int old_cursorX, old_cursorY;
 extern long posBufX, posBufY; //position in the edit buffer X:[0,1022] Y:[0,13000]

@@ -73,24 +73,7 @@ int kbhit(int timeout_ms)
         return -1; // error occurred
     }
 }
-/*
-int kbhit()
-{
-    if(peek_character != -1)
-    return 1;
 
-    tcgetattr(0, &term);
-    term2.c_lflag &= ~ICANON;
-    tcsetattr(0, TCSANOW, &term2);
-
-    int byteswaiting;
-    ioctl(0, FIONREAD, &byteswaiting);
-
-    tcsetattr(0, TCSANOW, &term);
-
-    return byteswaiting > 0;
-}
-*/
 /*----------------------*/
 /*Read char with control*/
 /*----------------------*/

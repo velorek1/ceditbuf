@@ -731,7 +731,7 @@ char horizontal_menu() {
   write_str(screen1, 1, new_rows, STATUS_BAR_MSG3, STATUSBAR, STATUSMSG,1);
   loadmenus(mylist, HOR_MENU);
   temp_char = start_hmenu(&data);
-  free_list(mylist);
+  free_list();
   write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
   write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
   write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
@@ -880,7 +880,7 @@ void optionsmenu() {
   write_str(screen1,15, 1, "H", MENU_PANEL, F_RED,1);
   //dump_screen(screen1);
 
-  free_list(mylist);
+  free_list();
   if(data.index == OPTION_1) {
     //File Info
     //fileInfoDialog();
@@ -927,7 +927,7 @@ void helpmenu() {
   write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
   write_str(screen1,15, 1, "H", MENU_PANEL, F_RED,1);
   //dump_screen(screen1);
-  free_list(mylist);
+  free_list();
   if(data.index == OPTION_1) {
     //About info
     //help_info();

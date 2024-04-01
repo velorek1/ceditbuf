@@ -367,7 +367,7 @@ void update_screen(SCREENCELL *newScreen) {
 
 
 void xor_update(SCREENCELL *screen1, SCREENCELL *screen2) {
-/* UPDATES ALL SCREEN CELLS TO DISPLAY */
+/* UPDATE only the cells that are different */
   int     i=0;
   int     wherex=0, wherey=0;
   SCREENCELL *aux1=screen1;
