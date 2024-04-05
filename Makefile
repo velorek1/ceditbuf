@@ -7,7 +7,7 @@ LDLIBS  =
 
 # The list of object files.
 OBJS =  main.o rterm.o listbox.o scbuf.o
-OBJS += ui.o fileb.o global.o listc.o
+OBJS += ui.o fileb.o global.o 
 OBJS += keyb.o tm.o edbuf.o 
 
 # the list of files to clean
@@ -25,7 +25,6 @@ cedit: $(OBJS)
 # INCLUDE DEPENDENCIES to compile depending on which
 # source has been touched.
 main.o: main.c rterm.h listbox.h scbuf.h keyb.h ui.h fileb.h tm.h listc.h
-listc.o: listc.c scbuf.h keyb.h rterm.h
 fileb.o: fileb.c fileb.h
 keyb.o: keyb.c rterm.h keyb.h
 listbox.o: listbox.c scbuf.h keyb.h

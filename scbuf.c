@@ -390,34 +390,36 @@ void xor_update(SCREENCELL *screen1, SCREENCELL *screen2) {
 }
 
 
-void xor_copy(SCREENCELL *screen1, SCREENCELL *screen2) {
+void xor_copy(SCREENCELL *screen1, SCREENCELL *screen2)
+{
 /* UPDATES ALL SCREEN CELLS TO DISPLAY */
-  int     i=0;
-  int     wherex=0, wherey=0;
-  SCREENCELL *aux1=screen1;
-  SCREENCELL *aux2=screen2;
-  if ((aux1!=NULL && aux2!=NULL) && (length(&aux1) == length(&aux2))){
-     for(i = 0; i < buffersize; i++) {
+	int i = 0;
+	int wherex = 0, wherey = 0;
+	SCREENCELL *aux1 = screen1;
+	SCREENCELL *aux2 = screen2;
+	if ((aux1 != NULL && aux2 != NULL) && (length(&aux1) == length(&aux2))) {
+		for (i = 0; i < buffersize; i++) {
 
-       if (aux1->ch != aux2->ch || aux1-> backColor != aux2 -> backColor || aux1-> foreColor != aux2 -> foreColor) { 
-           aux1->ch = aux2->ch;
-           aux1->backColor = aux2->backColor;
-           aux1->foreColor = aux2->foreColor;
-           wherex = wherex + 1; //line counter
+			if (aux1->ch != aux2->ch
+			    || aux1->backColor != aux2->backColor
+			    || aux1->foreColor != aux2->foreColor) {
+				aux1->ch = aux2->ch;
+				aux1->backColor = aux2->backColor;
+				aux1->foreColor = aux2->foreColor;
+				wherex = wherex + 1;	//line counter
 
-           if(wherex == sc_columns) {
-              //new line
-              wherex = 0;
-              wherey = wherey + 1;
-            }
+				if (wherex == sc_columns) {
+					//new line
+					wherex = 0;
+					wherey = wherey + 1;
+				}
 
-           aux1 = aux1->next;
-           aux2 = aux2->next;
-      }
-    }
-   }
+				aux1 = aux1->next;
+				aux2 = aux2->next;
+			}
+		}
+	}
 }
-
 /*------------------------------------------*/
 /* Draw window area with or without border. */
 /*------------------------------------------*/

@@ -4,7 +4,8 @@
    +Scroll function added. 
    Last modified : 01/04/2024 + Horizontal option implementation started
    			      + ESC_KEY added
-			      - Pending: add X,Y to item
+			      + X,Y option added for different options
+			      - Pending: horizontal scroll
    Coded by Velorek. Raw output
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -27,7 +28,6 @@
 int double_escape=0;
 int newrows=0, newcolumns=0;
 int listrows=0, listcolumns=0;
-unsigned orientation = VERTICAL;
 char KTRAIL0[5]={0};
 char KTRAIL1[5]={0};
 
@@ -36,13 +36,15 @@ char KTRAIL1[5]={0};
 /* --------------------- */
 
 // create new list element of type LISTCHOICE from the supplied text string
-LISTCHOICE *newitem(char *text) {
+LISTCHOICE *newitem(char *text,unsigned setX, unsigned setY) {
   LISTCHOICE *newp;
   newp = (LISTCHOICE *) malloc(sizeof(LISTCHOICE));
   newp->item = (char *)malloc(strlen(text) + 1);
   strcpy(newp->item, text);
   newp->next = NULL;
   newp->back = NULL;
+  newp->setX = setX;
+  newp->setY = setY;
   return newp;
 }
 
@@ -171,7 +173,10 @@ void displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
   switch (select) {
 
     case SELECT_ITEM:
-      gotoxy(scrollData->wherex, scrollData->selector);
+      if ((aux->setX == -1) || (aux->setY== -1 )) 	    
+        gotoxy(scrollData->wherex, scrollData->selector);
+      else
+        gotoxy(aux-> setX, aux -> setY);
       outputcolor(scrollData->foreColor1, scrollData->backColor1);
 
       //printf("%s\n", aux->item);
@@ -182,14 +187,17 @@ void displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
 	          printf("%lc", newchar);
 	      }
 	      else
-	        printf("%c", 0x20);
+	        if (scrollData->addSpaces != 0) printf("%c", 0x20);
       }
      printf("\n");
      break;
 
     case UNSELECT_ITEM:
-      gotoxy(scrollData->wherex, scrollData->selector);
-      outputcolor(scrollData->foreColor0, scrollData->backColor0);
+       if ((aux->setX == -1) || (aux->setY== -1 )) 	    
+         gotoxy(scrollData->wherex, scrollData->selector);
+       else
+         gotoxy(aux -> setX, aux -> setY);
+       outputcolor(scrollData->foreColor0, scrollData->backColor0);
       //printf("%s\n", aux->item);
       
 
@@ -199,7 +207,7 @@ void displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
 	          printf("%lc", newchar);
 	      }
 	      else
-	        printf("%c", 0x20);
+	       if (scrollData->addSpaces != 0) printf("%c", 0x20);
 
       }
      printf("\n");
@@ -353,7 +361,7 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
         }
 
     //check listbox orientation and change keys
-    if (orientation == VERTICAL){
+    if (scrollData->orientation == VERTICAL || scrollData->orientation == VERTICALWITHBREAK){
 	strcpy(KTRAIL0, K_UP_TRAIL);
 	strcpy(KTRAIL1, K_DOWN_TRAIL);
      }
@@ -383,6 +391,11 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
 		{
 			strcpy(chartrail, "\0");
 			read_keytrail(chartrail);
+		        //If mode VERTICALWITHBREAK is selected; selector menu is interrupted when left/right arrow keys are pressed
+		        if ((scrollData->orientation == VERTICALWITHBREAK) && (strcmp(chartrail,K_LEFT_TRAIL))==0)
+			     return K_LEFTMENU;
+		        if ((scrollData->orientation == VERTICALWITHBREAK) && (strcmp(chartrail,K_RIGHT_TRAIL))==0)
+			     return K_RIGHTMENU;
 
 			if (chartrail[0] == K_ESCAPE && chartrail[1] == 0) {
 				double_escape = 1;
@@ -436,7 +449,7 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
 				//Return value
 				ch = control;
 			}
-
+                      
 		}
 	}
 
@@ -465,12 +478,14 @@ void resetScrollData(SCROLLDATA *scrollData)
 	scrollData->backColor1 = 0;
 	scrollData->foreColor1 = 0;
 	scrollData->itemIndex = 0;
+	scrollData->addSpaces = 0;
+	scrollData->orientation = VERTICAL;
 }
 char listBox(LISTCHOICE * head,
 	     unsigned whereX, unsigned whereY,
 	     SCROLLDATA * scrollData, unsigned bColor0,
 	     unsigned fColor0, unsigned bColor1, unsigned fColor1,
-	     unsigned displayLimit,unsigned listorientation, unsigned locked) {
+	     unsigned displayLimit,unsigned listorientation, unsigned addSpaces, unsigned locked) {
 
   unsigned list_length = 0;
   //unsigned currentIndex = 0;
@@ -481,14 +496,13 @@ char listBox(LISTCHOICE * head,
  //Init values
   double_escape=0;
   resetScrollData(scrollData);
-  orientation = listorientation;
+  scrollData->orientation = listorientation;
  // Query size of the list
   list_length = query_length(&head) + 1;
 
   //Save calculations for SCROLL and store DATA
   scrollData->displayLimit = displayLimit;
   scrollLimit = list_length - scrollData->displayLimit;	//Careful with negative integers
-
   if(scrollLimit < 0 || displayLimit > list_length)
     scrollData->displayLimit = list_length;	//Failsafe for overboard values
 
@@ -501,6 +515,7 @@ char listBox(LISTCHOICE * head,
   scrollData->backColor1 = bColor1;
   scrollData->foreColor0 = fColor0;
   scrollData->foreColor1 = fColor1;
+  scrollData->addSpaces = addSpaces;
 
   get_terminal_dimensions(&listrows,&listcolumns);
   //Check whether we have to activate scroll or not 

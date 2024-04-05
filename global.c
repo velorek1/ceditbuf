@@ -49,6 +49,7 @@ long vdisplayLimit=0; //vertical scroll, last line that allows scroll
 long currentLine=0; //verticall scroll, pointer to current top line in scroll
 int vscrollActive=0; //vertical scroll, vertical scroll is posible
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
+int     programStatus = 0; //signal for overall program Status
 
 int initCEDIT(){
    get_terminal_dimensions(&new_rows,&new_columns);
@@ -61,6 +62,14 @@ int initCEDIT(){
    VLINES tempLine = {0};
 
    memset(&tempLine, '\0',sizeof(tempLine)); //Clear memory for temporary line
+   //Create one screen in memory
+   if (screen1 != NULL) deleteList(&screen1);
+     //if (screen2 != NULL) deleteList(&screen2);
+     //Init 2 : Create 2 Screens for a double buffer  approach  
+   old_rows=new_rows;
+   old_columns=new_columns;
+   create_screen(&screen1);
+    
    return 0;
 }	
 

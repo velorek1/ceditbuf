@@ -20,7 +20,7 @@ Last modified: 14/04/2019 Rename headers
 #include <dirent.h>
 #include "rterm.h"
 #include "scbuf.h"
-#include "uintf.h"
+#include "ui.h"
 
 /*====================================================================*/
 /* CONSTANTS */
@@ -30,36 +30,14 @@ Last modified: 14/04/2019 Rename headers
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
-typedef struct _listbox {
-  unsigned index;		// Item number
-  char   *item;			// Item string
-  char   *path;			// Item path
-  unsigned isDirectory;		// Kind of item
-  struct _listchoice *next;	// Pointer to next item
-  struct _listchoice *back;	// Pointer to previous item
-} LISTBOX;
-
-typedef struct _scrolldata {
-  unsigned scrollActive;	//To know whether scroll is active or not.
-  unsigned scrollLimit;		//Last index for scroll.
-  unsigned listLength;		//Total no. of items in the list
-  unsigned currentListIndex;	//Pointer to new sublist of items when scrolling.
-  unsigned displayLimit;	//No. of elements to be displayed.
-  unsigned scrollDirection;	//To keep track of scrolling Direction.
-  unsigned wherex;
-  unsigned wherey;
-  unsigned selector;		//Y++
-  unsigned backColor0;		//0 unselected; 1 selected
-  unsigned foreColor0;
-  unsigned backColor1;
-  unsigned foreColor1;
-  unsigned isDirectory;		// Kind of item
+typedef struct _dirdata {
   char   *item;
   char   *path;
   char    fullPath[MAX];
+  unsigned isDirectory;		// Kind of item
   unsigned itemIndex;
-  LISTBOX *head;		//store head of the list
-} SCROLLDATA;
+} DIRDATA;
+
 
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -74,33 +52,21 @@ void    cleanLine(int line, int backcolor, int forecolor, int startx,
 		  int numchars);
 
 //DYNAMIC LINKED LIST FUNCTIONS
-void    deleteList(LISTBOX ** head);
-LISTBOX *addend(LISTBOX * head, LISTBOX * newp);
-LISTBOX *newelement(char *text, char *itemPath, unsigned itemType);
-
-//LISTBOX FUNCTIONS
-char    listBox(LISTBOX * selector, unsigned whereX, unsigned whereY,
-		SCROLLDATA * scrollData, unsigned bColor0,
-		unsigned fColor0, unsigned bColor1, unsigned fColor1,
-		unsigned displayLimit);
-void    loadlist(LISTBOX * head, SCROLLDATA * scrollData,
-		 unsigned indexAt);
-
-void    gotoIndex(LISTBOX ** aux, SCROLLDATA * scrollData,
-		  unsigned indexAt);
-int     query_length(LISTBOX ** head);
-int     move_display(LISTBOX ** head, SCROLLDATA * scrollData);
-char    selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData);
-void    displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select);
+//void    deleteList(LISTBOX ** head);
+//LISTBOX *addend(LISTBOX * head, LISTBOX * newp);
+//LISTBOX *newelement(char *text, char *itemPath, unsigned itemType);
 
 //LISTFILES FUNCTIONS
-int     listFiles(LISTBOX ** listBox1, char *directory);
+int     listFiles(LISTCHOICE ** listBox1, DIRDATA *openFileData);
 int     addSpaces(char temp[MAX_ITEM_LENGTH]);
 void    cleanString(char *string, int max);
-void    changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
-		  char newDir[MAX]);
+//void    changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
+		  //char newDir[MAX]);
 //OPEN FILE DIALOG
-void    openFileDialog(SCROLLDATA * openFileData);
-int	setFileName(char fileName[MAX]);
+//void    openFileDialog(LISTCHOICE *listBox1, DIRDATA * openFileData, SCROLLDATA *scrollData);
+//int	setFileName(char fileName[MAX]);
+char replica(DIRDATA *datadir, SCROLLDATA *scrolld);
+
+
 
 #endif

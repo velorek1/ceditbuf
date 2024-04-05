@@ -10,5 +10,5 @@ Most immediate tasks:
 Most desirable taks:
 
 1. Horizontal scroll
-2. Integrate listbox and list.c
+2. Integrate listbox and list.c - DONE! (listc is out of the picture!)
 

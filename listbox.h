@@ -34,6 +34,7 @@ Last modified: 26/12/2022
 #define NOT_LOCKED 0
 #define VERTICAL 0
 #define HORIZONTAL 1
+#define VERTICALWITHBREAK 2
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
@@ -41,6 +42,8 @@ Last modified: 26/12/2022
 typedef struct _listchoice {
   unsigned index;		// Item number
   char   *item;			// Item string
+  int setX;		//X,Y position
+  int setY;		//-1 to ignore
   struct _listchoice *next;	// Pointer to next item
   struct _listchoice *back;	// Pointer to previous item
 } LISTCHOICE;
@@ -60,6 +63,8 @@ typedef struct _scrolldata {
   unsigned foreColor0;
   unsigned backColor1;
   unsigned foreColor1;
+  unsigned addSpaces;          //whether to add spaces or not
+  unsigned orientation;
   unsigned displayMetrics;     //to show metrics on screen/reuse code for text viewing
   char   *item;
   int      itemIndex;          //-1 means ESC was pressed
@@ -79,14 +84,14 @@ extern LISTCHOICE *listBox1;	//Head pointer.
 //DYNAMIC LINKED LIST FUNCTIONS
 void    removeList(LISTCHOICE ** head);
 LISTCHOICE *addatend(LISTCHOICE * head, LISTCHOICE * newp);
-LISTCHOICE *newitem(char *text);
+LISTCHOICE *newitem(char *text, unsigned setX, unsigned setY);
 
 //LISTBOX FUNCTIONS
 //void    addItems(LISTCHOICE ** listBox1);
 char    listBox(LISTCHOICE * selector, unsigned whereX, unsigned whereY,
 		SCROLLDATA * scrollData, unsigned bColor0,
 		unsigned fColor0, unsigned bColor1, unsigned fColor1,
-		unsigned displayLimit,unsigned listorientation, unsigned locked);
+		unsigned displayLimit,unsigned listorientation, unsigned addSpaces, unsigned locked);
 void    loadlist(LISTCHOICE * head, SCROLLDATA * scrollData,
 		 unsigned indexAt);
 

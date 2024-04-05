@@ -1,3 +1,8 @@
+/* C-edit project
+* Last updated - 5/4/2024
+* New drop-down menu implementation
+*/
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -8,13 +13,8 @@
 #include "global.h" 
 #include "keyb.h"
 #include "edbuf.h"
-#include "listc.h"
 #include "ui.h"
 
-//Globals for main
-int     programStatus = 0;
-char    kglobal = 0;		// Global variable for menu animation
-OLDLISTCHOICE *mylist, data;
 
 //Prototypes
 void draw_screen();
@@ -22,17 +22,12 @@ void cursor_tick();
 void editSection(char ac1, char ac2);
 int process_input(char ch);
 int special_keys();
+int control_keys(char ch);
 void linetoScreen(long whereY, VLINES tempLine);
 void cleanScreenLine(long whereY);
 void cleanSection(long whereY, long start, int amount);
 void buffertoScreen(long startPoint, long activeline);
 wchar_t currentChar = 0;
-char horizontal_menu();
-void filemenu();
-void optionsmenu();
-void helpmenu();
-void drop_down(char *kglobal);
-void credits();
 
 void draw_screen(){
 //BASE SCREEN IS STORED IN SCREEN 2
@@ -203,9 +198,14 @@ int esc_key = 0;
     	 keypressed = kbhit(1);
 	 if (keypressed == TRUE) {
 	   ch=readch();
+	   //Keys with a escape sequenece
            if (ch == ESC_KEY) {esc_key = special_keys(); cursor_tick(); ch = 0;}       
    	   else {
-		if (ch != 0) process_input(ch);
+		//Capture control keys   
+		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)) esc_key= control_keys(ch);   
+		else 
+	         //Process raw edit input from keyboard		
+		  if (ch != 0) process_input(ch);
 	   }
 	 }
          else
@@ -220,7 +220,19 @@ int esc_key = 0;
      credits();    
      return 0;
 }
-
+int control_keys(char ch){
+  char    returnMenuChar=0;
+  int menuCounter = 0;
+  int returnValue=0;
+    if(ch == K_CTRL_L) {
+      //Akin to F2
+	handlemenus(&returnMenuChar, &menuCounter,TRUE);
+    } 
+    if(ch == K_CTRL_C) {
+      returnValue  = ENDSIGNAL;
+    }
+  return returnValue;
+}
 int special_keys() {
 /* MANAGE SPECIAL KEYS */
 /*
@@ -235,6 +247,8 @@ int special_keys() {
  
   int     esc_key = 0;
   char    chartrail[5];
+  char    returnMenuChar=0;
+  int menuCounter = 0;
     old_cursorX = cursorX;
     old_cursorY = cursorY;
     oldposBufX = posBufX;
@@ -250,13 +264,7 @@ int special_keys() {
     //FUNCTION KEYS : F1 - F4
     if(strcmp(chartrail, K_F2_TRAIL) == 0 ||
        strcmp(chartrail, K_F2_TRAIL2) == 0) {
-      if(horizontal_menu() == K_ESCAPE) {
-	//Exit horizontal menu with ESC 3x
-	kglobal = K_ESCAPE;
-	//main_screen();
-      }       
-      //  Drop-down menu loop 
-      drop_down(&kglobal);  //animation
+	    handlemenus(&returnMenuChar, &menuCounter,TRUE);
     } else if(strcmp(chartrail, K_F3_TRAIL) == 0 ||
           strcmp(chartrail, K_F3_TRAIL2) == 0) {
     } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
@@ -305,14 +313,14 @@ int special_keys() {
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
-      data.index=FILE_MENU;
-      drop_down(&kglobal);  //animation
+      returnMenuChar=FILE_MENU;
+      handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_P) == 0) {
-      data.index=OPT_MENU;
-      drop_down(&kglobal);  //animation
+      returnMenuChar=OPT_MENU;
+      handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
-      data.index=HELP_MENU;
-      drop_down(&kglobal);  //animation
+      returnMenuChar=HELP_MENU;
+      handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       //openFileHandler();    //Open file Dialog
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
@@ -723,230 +731,6 @@ int endLine=0;
 
    return 0; 
 }
-
-char horizontal_menu() {
-  char    temp_char;
-  kglobal=-1;
-  //cleanStatusBar();
-  write_str(screen1, 1, new_rows, STATUS_BAR_MSG3, STATUSBAR, STATUSMSG,1);
-  loadmenus(mylist, HOR_MENU);
-  temp_char = start_hmenu(&data);
-  free_list();
-  write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
-  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
-  write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
-  write_str(screen1, 15, 1, "H", MENU_PANEL, F_RED,1);
-  write_str(screen1,0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
-  //dump_screen(screen1);
-  return temp_char;
-}
-
-/*----------------------*/
-/* Drop_Down Menu Loop  */
-/*----------------------*/
-
-void drop_down(char *kglobal) {
-/* 
-   Drop_down loop animation. 
-   K_LEFTMENU/K_RIGHTMENU -1 is used when right/left arrow keys are used
-   so as to break vertical menu and start the adjacent menu
-   kglobal is changed by the menu functions.
-*/
-  do {
-    if(*kglobal == K_ESCAPE) {
-      //Exit drop-down menu with ESC           
-      *kglobal = 0;
-      break;
-    }
-    if(data.index == FILE_MENU) {
-      filemenu();
-      if(*kglobal == K_LEFTMENU) {
-	data.index = OPT_MENU;
-      }
-      if(*kglobal == K_RIGHTMENU) {
-	data.index = HELP_MENU;
-      }
-    }
-    if(data.index == OPT_MENU) {
-      optionsmenu();
-      if(*kglobal == K_LEFTMENU) {
-	data.index = HELP_MENU;
-      }
-      if(*kglobal == K_RIGHTMENU) {
-	data.index = FILE_MENU;
-      }
-    }
-    if(data.index == HELP_MENU) {
-      helpmenu();
-      if(*kglobal == K_LEFTMENU) {
-	data.index = FILE_MENU;
-      }
-      if(*kglobal == K_RIGHTMENU) {
-	data.index = OPT_MENU;
-      }
-    }
-  } while(*kglobal != K_ENTER);
-}
-
-/*-------------------------*/
-/* Display File menu       */
-/*-------------------------*/
-
-void filemenu() {  
-  //cleanStatusBar();
-  if (screen2 != NULL)
-	deleteList(&screen2);
-  create_screen(&screen2);
-
-  copy_screen(screen2,screen1);
-  data.index = OPTION_NIL;
-  write_str(screen1,1, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
-  loadmenus(mylist, FILE_MENU);
-  write_str(screen1,0, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1,1);
-  draw_window(screen1,0, 2, 12, 8, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
-  kglobal = start_vmenu(&data);
-  //close_window();
-  write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
-  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
-  write_str(screen1, 7, 1, "p", MENU_PANEL, F_RED,1);
-  write_str(screen1, 15, 1, "H", MENU_PANEL, F_RED,1);
-  //dump_screen(screen1);
-  free_list(mylist);
-
-  if(data.index == OPTION_1) {
-    //New file option
-    //newDialog(currentFile);
-    //Update new global file name
-    //refresh_screen(-1);
-     //programStatus  = ENDSIGNAL;
-  }
-  if(data.index == OPTION_2) {
-    //External Module - Open file dialog.
-    //openFileHandler();
-    //flush_editarea();
-  }
-  if(data.index == OPTION_3) {
-    //Save option
-  }
-  if(data.index == OPTION_4) {
-    //Save as option  
-      //saveasDialog(currentFile);
-      //refresh_screen(-1);
-  }
-
-  if(data.index == OPTION_5) {
-    //Exit option
-    //if(fileModified == 1)
-      //exitp = confirmation();	//Shall we exit? Global variable!
-    //else
-      programStatus  = ENDSIGNAL;
-  }
-  data.index = OPTION_NIL;
-  //cleanStatusBar();
-   //Restore message in status bar
-   //kglobal= K_ESCAPE;
-   write_str(screen1, 1, new_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,1);
-   //copy_screen(screen1,screen2);
-   //dump_screen(screen1);
-  xor_update(screen2,screen1);
-  copy_screen(screen1,screen2);
-  if (screen2 != NULL)
-	deleteList(&screen2);
- 
-}
-
-/*--------------------------*/
-/* Display Options menu     */
-/*--------------------------*/
-
-void optionsmenu() {
-  //int  setColor;
-  if (screen2 != NULL)
-	deleteList(&screen2);
-  create_screen(&screen2);
-
-  copy_screen(screen2,screen1);
- 
-  data.index = OPTION_NIL;
-  write_str(screen1, 0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
-  loadmenus(mylist, OPT_MENU);
-  write_str(screen1,6, 0, "Options", MENU_SELECTOR, MENU_FOREGROUND1,1);
-  draw_window(screen1,6, 2, 19, 6, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
-  kglobal = start_vmenu(&data);
-  //close_window();
-  write_str(screen1,0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
-  write_str(screen1,0, 1, "F", MENU_PANEL, F_RED,1);
-  write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
-  write_str(screen1,15, 1, "H", MENU_PANEL, F_RED,1);
-  //dump_screen(screen1);
-
-  free_list();
-  if(data.index == OPTION_1) {
-    //File Info
-    //fileInfoDialog();
-  }
-  if(data.index == OPTION_3) {
-    //Set Colors
-  /*  setColor = colorsWindow(mylist,COLORSWTITLE);
-    setColorScheme(setColor);
-    checkConfigFile(setColor);	//save new configuration in config file
-    *///refresh_screen(1);
-  }
-  data.index = OPTION_NIL;
-  //Restore message in status bar
-  //cleanStatusBar();
-  write_str(screen1, 1, new_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,1);
-   //copy_screen(screen1,screen2);
-   //dump_screen(screen1);
-  xor_update(screen2,screen1);
-  copy_screen(screen1,screen2);
-  if (screen2 != NULL)
-	deleteList(&screen2);
- 
-}
-
-/*--------------------------*/
-/* Display Help menu        */
-/*--------------------------*/
-
-void helpmenu() { 
-  if (screen2 != NULL)
-	deleteList(&screen2);
-  create_screen(&screen2);
-
-  copy_screen(screen2,screen1);
- 
-  data.index = OPTION_NIL;
-  write_str(screen1, 1, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
-  loadmenus(mylist, HELP_MENU);
-  write_str(screen1, 15, 1, "Help", MENU_SELECTOR, MENU_FOREGROUND1,1);
-  draw_window(screen1,15, 2, 25, 5, MENU_PANEL, MENU_FOREGROUND0, 0,1,0,1,1);
-  kglobal = start_vmenu(&data);
-  write_str(screen1, 0,1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,1);
-  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,1);
-  write_str(screen1,7, 1, "p", MENU_PANEL, F_RED,1);
-  write_str(screen1,15, 1, "H", MENU_PANEL, F_RED,1);
-  //dump_screen(screen1);
-  free_list();
-  if(data.index == OPTION_1) {
-    //About info
-    //help_info();
-  }
-  if(data.index == OPTION_2) {
-    //About info
-    //about_info();
-  }
-  data.index = -1;
-  //Restore message in status bar
-  //cleanStatusBar();
-  write_str(screen1, 1, new_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,1);
-  xor_update(screen2,screen1);
-  copy_screen(screen1,screen2);
-  if (screen2 != NULL)
-	deleteList(&screen2);
- 
-}
-
 
 /*---------*/
 /* Credits */

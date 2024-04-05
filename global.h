@@ -19,7 +19,9 @@
 #define ESC_KEY '\e'
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80 
-
+#define TRUE 1
+#define FALSE 0
+typedef int BOOL;
 
 //USER-DEFINED MESSAGES
 extern SCREENCELL *screen1;
@@ -110,7 +112,7 @@ extern int WINDOW_TITLEF;
 #define OPTION_NIL -1		//Reset option
 #define CONFIRMATION 1
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
-#define K_RIGHTMENU -2		//Right arrow key pressed while in menu
+#define K_RIGHTMENU 1		//Right arrow key pressed while in menu
 
 //MENU CONSTANTS
 #define HOR_MENU -1
@@ -145,6 +147,7 @@ extern long linesinFile; //vertical scroll
 extern long vdisplayLimit; //vertical scroll, last line that allows scroll
 extern long currentLine; //verticall scroll, pointer to current top line in scroll
 extern int vscrollActive; //vertical scroll, vertical scroll is posible
+extern int programStatus; //signal for overall program status
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
 
 
