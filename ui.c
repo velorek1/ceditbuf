@@ -257,9 +257,9 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
       if (horizontalMenu) *returnMenuChar= horizontal_menu();  
       do{
       switch (*returnMenuChar) {
-	case 0: *returnMenuChar=filemenu(); break;
-	case 1: *returnMenuChar=optionsmenu();  break;
-	case 2: *returnMenuChar=helpmenu();  break;
+	case 0: *menuCounter=FILE_MENU; *returnMenuChar=filemenu(); break;
+	case 1: *menuCounter=OPT_MENU; *returnMenuChar=optionsmenu();  break;
+	case 2: *menuCounter=HELP_MENU; *returnMenuChar=helpmenu();  break;
 	default:
       }       
       *menuCounter=*menuCounter + *returnMenuChar;  
@@ -301,7 +301,7 @@ char filemenu() {
   if (screen2 != NULL) deleteList(&screen2);
   create_screen(&screen2);
   copy_screen(screen2,screen1);
-  write_str(screen1,1, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
+  write_str(screen1,0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
   write_str(screen1,0, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1,1);
   loadmenus(FILE_MENU);
   draw_window(screen1,0, 2, 12, 8, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
@@ -394,7 +394,7 @@ char helpmenu() {
 
   copy_screen(screen2,screen1);
    write_str(screen1,15, 1, "Help", MENU_SELECTOR, MENU_FOREGROUND1,1);
-  write_str(screen1, 1, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
+  write_str(screen1, 0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
   loadmenus(HELP_MENU);
   draw_window(screen1,15, 2, 25, 5, MENU_PANEL, MENU_FOREGROUND0, 0,1,0,1,1);
   ch = listBox(listBox1, 18, 3 , &scrollData, MENU_PANEL, MENU_FOREGROUND0,  MENU_SELECTOR, MENU_FOREGROUND1,  -1, VERTICALWITHBREAK,0,1); 

@@ -264,7 +264,7 @@ int special_keys() {
     //FUNCTION KEYS : F1 - F4
     if(strcmp(chartrail, K_F2_TRAIL) == 0 ||
        strcmp(chartrail, K_F2_TRAIL2) == 0) {
-	    handlemenus(&returnMenuChar, &menuCounter,TRUE);
+       handlemenus(&returnMenuChar, &menuCounter,TRUE);
     } else if(strcmp(chartrail, K_F3_TRAIL) == 0 ||
           strcmp(chartrail, K_F3_TRAIL2) == 0) {
     } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
@@ -314,12 +314,15 @@ int special_keys() {
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
       returnMenuChar=FILE_MENU;
+      menuCounter=FILE_MENU;
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_P) == 0) {
       returnMenuChar=OPT_MENU;
+      menuCounter=OPT_MENU;
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
       returnMenuChar=HELP_MENU;
+      menuCounter=HELP_MENU;
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       //openFileHandler();    //Open file Dialog
