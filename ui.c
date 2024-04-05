@@ -261,6 +261,7 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
 	case 1: *menuCounter=OPT_MENU; *returnMenuChar=optionsmenu();  break;
 	case 2: *menuCounter=HELP_MENU; *returnMenuChar=helpmenu();  break;
 	default:
+		break;
       }       
       *menuCounter=*menuCounter + *returnMenuChar;  
       if (*returnMenuChar == K_ENTER) break;
@@ -284,7 +285,7 @@ char ch=0;
 	//load menus from ui.c onto lisBox in (global.c)
         ch = listBox(listBox1, 0, 1 , &scrollData, MENU_PANEL, MENU_FOREGROUND0,  MENU_SELECTOR, MENU_FOREGROUND1,  3, HORIZONTAL,0,1); 
         //delete listbox
-	ch++; //to avoid warning
+	if(ch == ESC_KEY) scrollData.itemIndex = ch;; //to avoid warning
 	removeList(&listBox1);
 	xor_update(screen2,screen1);
   	copy_screen(screen1,screen2);

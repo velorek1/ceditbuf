@@ -111,8 +111,8 @@ extern int WINDOW_TITLEF;
 #define OPTION_5 4
 #define OPTION_NIL -1		//Reset option
 #define CONFIRMATION 1
-#define K_LEFTMENU 1		//Left arrow key pressed while in menu
-#define K_RIGHTMENU -1		//Right arrow key pressed while in menu
+#define K_LEFTMENU -1		//Left arrow key pressed while in menu
+#define K_RIGHTMENU 1		//Right arrow key pressed while in menu
 
 //MENU CONSTANTS
 #define HOR_MENU -1

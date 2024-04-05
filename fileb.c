@@ -25,7 +25,7 @@ LAST MODIFIED : 14/04/2019 - Rename headers
 /*----------------------*/
 
 int file_exists(char *fileName) {
-  int     ok;
+  int     ok=0;
   if(access(fileName, F_OK) != -1) {
     ok = 1;			//File exists
   } else {
@@ -39,7 +39,7 @@ int file_exists(char *fileName) {
 /*---------------*/
 
 long getfileSize(FILE * filePtr) {
-  long    sz;
+  long    sz=0;
   if(filePtr != NULL) {
     fseek(filePtr, 0L, SEEK_END);
     sz = ftell(filePtr);
@@ -54,7 +54,7 @@ long getfileSize(FILE * filePtr) {
 /*---------------------*/
 
 long countLinesFile(FILE * filePtr) {
-  char    ch;
+  char    ch=0;
   long    counterA = 0;
   if(filePtr != NULL) {
     rewind(filePtr);		//Make sure we are at the beginning
@@ -76,7 +76,7 @@ long countLinesFile(FILE * filePtr) {
 
 
 long checkFile(FILE * filePtr) {
-  char    ch;
+  char    ch=0;
   long    counterA = 0;
   if(filePtr != NULL) {
     rewind(filePtr);		//Make sure we are at the beginning
@@ -126,7 +126,7 @@ int closeFile(FILE * filePtr) {
    Close file
 @return ok: 
 */
-  int     ok;
+  int     ok=0;
 
   if(filePtr != NULL) {
     ok = fclose(filePtr);
