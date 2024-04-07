@@ -1,10 +1,10 @@
 
 Most immediate tasks:
 
-1. Function to copy from edit buffer to screen buffer within display constraints
+1. Function to copy from edit buffer to screen buffer within display constraints - DONE!
 2. Function to copy from edit buffer to file
 3. Integrate opfile with newer listbox
-4. Integrate ui.c and uintf.c
+4. Integrate ui.c and uintf.c - DONE!
 5. Open file and vertical scroll
 
 Most desirable taks:

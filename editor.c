@@ -1,0 +1,428 @@
+/* Main editor section C·edit 
+ * for a Text User Interface
+ * TextBox
+ * Window
+ * Last modified: 6/04/2024
+ * @author:velorek
+ */
+#include <stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <wchar.h>
+#include "rterm.h"
+#include "scbuf.h"
+#include "ui.h"
+#include "tm.h"
+#include "keyb.h"
+#include "global.h"
+#include "editor.h"
+
+wchar_t convertChar(char c1, char c2) {
+    // Given the two-byte representation for a Char get the wchar convrsion
+    setlocale(LC_ALL, "");
+
+    // Combine the bytes into a single string
+    char temp[3];
+    temp[0] = c1;
+    temp[1] = c2;
+    temp[2] = '\0';
+
+    wchar_t wchar;
+
+    mbstowcs(&wchar, temp, 1);
+
+    return wchar;
+}
+void linetoScreenRAW(long whereY, VLINES tempLine){
+//dump temporary Line to screen buffer - RAW MODE
+   int i=0;
+   int attrib = EDIT_FORECOLOR;
+
+   for (i=0; i<findEndline(tempLine); i++){
+	   attrib = tempLine.linea[i].attrib;  
+         //don't print beyond display!
+	 if (i+START_CURSOR_X < new_columns-1){
+	  if(tempLine.linea[i].specialChar != 0) {
+	    //Special char ? print the two values to screen buffer.
+            gotoxy(i+START_CURSOR_X+1, whereY+1);
+            outputcolor(attrib, EDITAREACOL);
+            printf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
+	  } else {
+	    gotoxy(i+START_CURSOR_X+1, whereY+1);
+            outputcolor(attrib, EDITAREACOL);
+            printf("%c", tempLine.linea[i].ch);
+  	  }
+       }
+   }
+}
+
+void linetoScreen(long whereY, VLINES tempLine){
+//dump temporary Line to screen buffer - RAW MODE
+   int i=0;
+   int attrib = EDIT_FORECOLOR;
+   wchar_t temp='0';
+   for (i=0; i<findEndline(tempLine); i++){
+	   attrib = tempLine.linea[i].attrib;  
+         //don't print beyond display!
+	 if (i+START_CURSOR_X < new_columns-1){
+	  if(tempLine.linea[i].specialChar != 0) {
+	    //Special char ? print the two values to screen buffer.
+            //write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
+            temp = convertChar(tempLine.linea[i].specialChar, tempLine.linea[i].ch);         // Second char
+            write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
+	    
+            //rintf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
+	  } else {
+            //write_ch(screen1,i+START_CURSOR_X, whereY+1,tempLine.linea[i].ch,attrib,EDITAREACOL,0);
+            temp = tempLine.linea[i].ch;
+            write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
+            //printf("%c", tempLine.linea[i].ch);
+  	  }
+       }
+   }
+
+   //dump_screen(screen1);
+}
+
+
+void cleanScreenLine(long whereY)
+{
+   int i=0;
+   for (i=0; i<new_columns-2; i++){
+	 	gotoxy(i+START_CURSOR_X+1, whereY+1);
+         	outputcolor(EDIT_FORECOLOR, EDITAREACOL);
+          	printf("%c", FILL_CHAR);
+	}
+    resetAnsi(0);
+   
+}
+
+void cleanSection(long whereY, long start, int amount)
+{
+   int i=0;
+   for (i=start; i<start+amount; i++){
+	 	gotoxy(i+START_CURSOR_X+1, whereY+1);
+         	outputcolor(EDIT_FORECOLOR, EDITAREACOL);
+          	printf("%c", FILL_CHAR);
+	}
+    resetAnsi(0);
+   
+}
+
+
+
+void buffertoScreen(long startPoint, long activeline, BOOL raw){
+   long j=0;
+   for (j=startPoint; j<_length(&edBuf1); j++){
+	  _dumpLine(edBuf1, j , &tempLine);
+ 	  if (raw==TRUE){ 
+	      linetoScreenRAW(j+START_CURSOR_Y, tempLine);
+	  }else{ 
+              linetoScreen(j+START_CURSOR_Y, tempLine);
+	  }
+
+	}
+    _dumpLine(edBuf1, activeline, &tempLine);
+    resetAnsi(0);
+}
+
+int editor_section(char ch){
+char accentchar[2];
+int insertMode=0;
+VLINES *aux = NULL;
+VLINES splitLine;
+int i,j=0;
+int attrib=EDIT_FORECOLOR;
+char newch=0;
+int endLine=0;
+       
+       //Check whether we are on Readmode
+       // if (fileModified != FILE_READMODE) {
+       //if ((ch > 31 && ch < 127) || ch < 0) {
+
+       // A KEY IS PRESSED AND ADDED TO EDIT BUFFER
+       // FIRST check for negative chars and special characters
+        newch=ch;
+        accentchar[0] = 0;
+        accentchar[1] = newch;
+       //Check whether we are on Readmode
+       // if (fileModified != FILE_READMODE) {
+     //Process normal printable chars first
+     if ((ch > 31 && ch < 127) || ch < 0) {
+	if (ch < 0) {
+	    read_accent(&newch, accentchar);
+	    newch = accentchar[1];
+      }
+      //check if we are at the limit of our display to print chars
+      if (cursorX < new_columns-2) cursorX++;
+      
+      //SYNTAX HIGHLIGHTING DEMO
+      //Highlight numbers in GREEN
+      if ((accentchar[1] >= 48) && (accentchar[1] <=57)) attrib = FH_GREEN; 
+      //Highlight special characters in CYAN
+      
+      if ((accentchar[1] >= 33) && (accentchar[1] <=47)) attrib = FH_CYAN; 
+      aux = _getObject(edBuf1, posBufY);
+      if ((accentchar[1] >= 58) && (accentchar[1] <=64)) attrib = FH_CYAN; 
+      aux = _getObject(edBuf1, posBufY);
+      if ((accentchar[1] >= 91) && (accentchar[1] <=96)) attrib = FH_CYAN; 
+      aux = _getObject(edBuf1, posBufY); 
+      if ((accentchar[1] >= 123) && (accentchar[1] <=126)) attrib = FH_CYAN; 
+      aux = _getObject(edBuf1, posBufY);
+
+
+
+
+      //FIRST TIME -> CREATE LINES IN BUFFER
+      if (aux == NULL) {
+	//FIRST CHAR - if not we create a new line in buffer
+
+      	tempLine.index = posBufY;
+	//Add spaces if cursor is not at (0,0)
+ 	if (posBufX != 0) {
+		for (i=0; i<posBufX; i++) {
+			tempLine.linea[i].ch = FILL_CHAR;
+        		tempLine.linea[i].specialChar = 0;
+			tempLine.linea[i].attrib = EDIT_FORECOLOR;
+		}
+	}	
+	tempLine.linea[posBufX].ch = accentchar[1];
+        tempLine.linea[posBufX].specialChar = accentchar[0];
+        tempLine.linea[posBufX].attrib = attrib;
+	//add end_line_char to line
+	posBufX = posBufX + 1;
+	tempLine.linea[posBufX].ch = END_LINE_CHAR;
+        tempLine.linea[posBufX].specialChar = 0;
+        tempLine.linea[posBufX].attrib = attrib;
+	edBuf1 = _addatend(edBuf1, _newline(tempLine));
+	linetoScreenRAW(cursorY,tempLine);
+     } else
+	//LINE ALREADY EXISTS
+	{
+	//Locate the end of the line
+	endLine = findEndline(tempLine);
+	//Insert characters in the middle of other characters
+	if (endLine > posBufX) {
+	
+	   tempLine.index = posBufY; //with every line index is incremented
+	   if (insertMode == FALSE){
+	     for (i=endLine; i>=posBufX; i--){ 
+                 tempLine.linea[i+1].ch = tempLine.linea[i].ch;
+                 tempLine.linea[i+1].specialChar = tempLine.linea[i].specialChar;
+                 tempLine.linea[i+1].attrib = tempLine.linea[i].attrib;
+              }
+	    }
+             tempLine.linea[posBufX].ch = accentchar[1];
+             tempLine.linea[posBufX].specialChar = accentchar[0];
+             tempLine.linea[posBufX].attrib = attrib;
+              posBufX = posBufX + 1;
+             _updateLine(edBuf1, posBufY, &tempLine);
+	     linetoScreenRAW(cursorY,tempLine);	
+	     
+	}    
+	else {
+	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
+          //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
+	  if(posBufX > endLine) {
+	    for(i = endLine; i < posBufX; i++) {
+	     tempLine.linea[i].ch = FILL_CHAR;
+             tempLine.linea[i].specialChar = 0;
+	     tempLine.linea[i].attrib = EDIT_FORECOLOR;
+	   }
+          } 
+	  tempLine.linea[posBufX].ch = accentchar[1];
+          tempLine.linea[posBufX].specialChar = accentchar[0];
+          tempLine.linea[posBufX].attrib = attrib;
+	  posBufX = posBufX + 1;
+	  tempLine.linea[posBufX].ch = END_LINE_CHAR;
+          tempLine.linea[posBufX].specialChar = 0;
+          tempLine.linea[posBufX].attrib = attrib;
+	  _updateLine(edBuf1, posBufY, &tempLine);  
+	  linetoScreenRAW(cursorY,tempLine);
+         }
+      }
+    }
+    old_cursorX = cursorX;
+    old_cursorY = cursorY;
+    oldposBufX = posBufX;
+    oldposBufY = posBufY;
+
+   //HANDLE ENTER KEY 
+    if (ch == K_ENTER){
+      //Add line to buffer
+      //Display limit rows
+      update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+      if (cursorY<new_rows - 3) cursorY++;
+      cursorX = START_CURSOR_X;
+      //If buffer position pointer is at the end create a new empty line
+      if (_length(&edBuf1) <= posBufY){
+        //New line without chars in current line in edit buffer
+        memset(&tempLine, '\0',sizeof(tempLine));
+ 	if (_length(&edBuf1)>0) tempLine.index = _length(&edBuf1);
+	else tempLine.index = posBufY;
+        tempLine.linea[posBufX].ch = END_LINE_CHAR;
+        tempLine.linea[posBufX].specialChar = 0;
+        tempLine.linea[posBufX].attrib = 0;
+	edBuf1 = _addatend(edBuf1, _newline(tempLine));
+      //  update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+     } else{ 
+        //SPLIT LINE IN TWO 
+	//Locate the end of the line
+  	endLine = findEndline(tempLine);
+       // update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+          //if (posBufX < endLine) {
+           //Check if there are lines below and if so, move them.
+	   //Move lines algorithm
+	   //Create a new line to make room for the move
+	   //Add current index to new line
+           memset(&splitLine, '\0',sizeof(splitLine));
+           memset(&tempLine, '\0',sizeof(tempLine));
+	   tempLine.index = _length(&edBuf1);
+	   edBuf1 = _addatend(edBuf1, _newline(tempLine));
+	   //Move lines [j -> j+1] from bottom up until 1 line before active line
+	   for (j=_length(&edBuf1); j>posBufY; j--)
+		{
+		     _dumpLine(edBuf1, j, &tempLine);
+    	             _updateLine(edBuf1, j+1, &tempLine);
+		     cleanSection(j+START_CURSOR_Y,0,findEndline(tempLine));
+	   	}
+	     _dumpLine(edBuf1, posBufY, &tempLine);
+	     //Where are we on current line? -> Shall we move part of it?
+              
+             memset(&splitLine, '\0',sizeof(splitLine));
+ 	     //Split (1) and move(2) chars after posBufx to next line
+	     //(1) Split and Update current line with chars that remain
+	     for (i=0; i<posBufX; i++){
+		  splitLine.linea[i].ch = tempLine.linea[i].ch;
+		  splitLine.linea[i].specialChar = tempLine.linea[i].specialChar;
+		  splitLine.linea[i].attrib = tempLine.linea[i].attrib;
+	     } 
+              if (isLineTerminated(splitLine)==FALSE) splitLine.linea[i].ch = END_LINE_CHAR;
+	     _updateLine(edBuf1, posBufY, &splitLine);
+	     j=0;
+	     //(2) Move chars after posBufX to next line
+             memset(&splitLine, '\0',sizeof(splitLine));
+ 	     for (i=posBufX; i<endLine; i++){
+		   //j+1 line
+		  splitLine.linea[j].ch = tempLine.linea[i].ch;
+		  splitLine.linea[j].specialChar = tempLine.linea[i].specialChar;
+		  splitLine.linea[j].attrib = tempLine.linea[i].attrib;
+	   	  j++;
+  	      }
+	     if (isLineTerminated(splitLine)==FALSE) splitLine.linea[j].ch = END_LINE_CHAR;
+	   //Update [J+1] line and write changes to screen
+	   _updateLine(edBuf1, posBufY+1, &splitLine);
+	   //cleanScreenLine(cursorY-1);
+           cleanSection(cursorY-1,0,findEndline(tempLine));
+           buffertoScreen(posBufY, posBufY+1,TRUE);
+	          
+      } 
+      //}
+      //Move buffer pointer positions
+      posBufY = posBufY + 1;
+      posBufX = 0;
+     }
+      //fileModified = FILE_MODIFIED;
+      
+   if(ch == K_BACKSPACE) {
+      //BACKSPACE key
+      update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+      if (posBufX == findEndline(tempLine)){
+        tempLine.linea[posBufX-1].ch = 0;
+        tempLine.linea[posBufX-1].specialChar = 0;
+        tempLine.linea[posBufX-1].attrib = 0;
+      } 
+      else{
+	//shift characters to the left if we are not at the end of the line 
+       if (posBufX != 0){
+          for(i=posBufX-1;i<findEndline(tempLine);i++){
+            tempLine.linea[i].ch = tempLine.linea[i+1].ch;
+            tempLine.linea[i].specialChar = tempLine.linea[i+1].specialChar;
+            tempLine.linea[i].attrib = tempLine.linea[i+1].attrib;
+          }
+          tempLine.linea[i].ch = 0;
+       }
+      }
+     //Remove line if we continue pressing backspace
+     if(cursorX == START_CURSOR_X && cursorY > START_CURSOR_Y) {
+ 	//if (posBufY >= _length(&edBuf1)-1) _deleteObject(&edBuf1, posBufY, FALSE); //remove line from buffer
+        //else { 
+              memset(&tempLine, '\0',sizeof(tempLine));
+              _dumpLine(edBuf1, posBufY-1, &tempLine);
+	      if (findEndline(tempLine) < 1){
+
+	       for (j=posBufY-1; j<=_length(&edBuf1); j++)
+		{
+                     _dumpLine(edBuf1, j+1, &tempLine);
+		     _hardupdateLINE(&edBuf1, j, tempLine);
+	             linetoScreenRAW(j+START_CURSOR_Y,tempLine);
+		     cleanScreenLine(j+START_CURSOR_Y+1);   
+                     //cleanSection(cursorY, findEndline(tempLine), 2);
+	      }
+	      } else {
+		      //merge two lines
+		     endLine = findEndline(tempLine);
+                      _dumpLine(edBuf1, posBufY, &splitLine);
+		      for (i=0;i<findEndline(splitLine);i++) {
+			     tempLine.linea[endLine+i].ch = splitLine.linea[i].ch; 
+			     tempLine.linea[endLine+i].attrib = splitLine.linea[i].attrib; 
+			     tempLine.linea[endLine+i].specialChar = splitLine.linea[i].specialChar; 		      
+		      }
+		      tempLine.linea[endLine+i].ch = END_LINE_CHAR;
+		     _hardupdateLINE(&edBuf1, posBufY-1, tempLine);
+	       for (j=posBufY; j<=_length(&edBuf1); j++)
+		{
+                     _dumpLine(edBuf1, j+1, &tempLine);
+		     _hardupdateLINE(&edBuf1, j, tempLine);
+	             linetoScreenRAW(j+START_CURSOR_Y,tempLine);
+		     cleanScreenLine(j+START_CURSOR_Y+1);   
+                     //cleanSection(cursorY, findEndline(tempLine), 2);
+	       }
+               cleanScreenLine(posBufY+1);   
+               cleanScreenLine(posBufY+2);   
+
+	       }
+
+		if (posBufY != _length(&edBuf1)) _deleteObject(&edBuf1, _length(&edBuf1)-1, FALSE);
+	//}
+	if (posBufY>0) posBufY--;
+	_dumpLine(edBuf1, posBufY,&tempLine);
+	posBufX = findEndline(tempLine)+1;
+	cursorY = cursorY - 1;
+	cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
+     }
+      //cleanScreenLine(cursorY);
+      if(cursorX > START_CURSOR_X){
+        cursorX = cursorX - 1;
+        posBufX--;
+        _updateLine(edBuf1, posBufY, &tempLine);    
+      } 
+
+
+      cleanSection(cursorY, findEndline(tempLine), 2);
+      linetoScreenRAW(cursorY,tempLine);
+     // cleanScreenLine(_length(&edBuf1)-1);   
+    } 
+
+    if(ch == K_TAB) {
+      //TAB key sends spaces for convenience
+      	      for (i=posBufX; i<posBufX+TAB_SPACES; i++)
+
+		{
+	            tempLine.linea[i].ch = FILL_CHAR;
+                    tempLine.linea[i].specialChar = 0;
+                    tempLine.linea[i].attrib = 0;
+	      }      
+	      posBufX=posBufX + TAB_SPACES;
+	      if (cursorX < new_columns-8) {
+                      for (i=0; i<TAB_SPACES; i++) update_ch(cursorX+i, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+		      cursorX = cursorX + TAB_SPACES;
+	      }
+        _updateLine(edBuf1, posBufY, &tempLine);    
+     }
+
+   return 0; 
+}
+
+

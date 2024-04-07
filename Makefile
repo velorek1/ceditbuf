@@ -1,13 +1,13 @@
 .POSIX:
 TARGET = cedit
 CC     = cc
-CFLAGS = -Wall -Wextra -fsigned-char 
+CFLAGS = -Wall -Wextra  
 LDFLAGS =
 LDLIBS  =
 
 # The list of object files.
 OBJS =  main.o rterm.o listbox.o scbuf.o
-OBJS += ui.o fileb.o global.o 
+OBJS += ui.o fileb.o global.o menu.o editor.o 
 OBJS += keyb.o tm.o edbuf.o 
 
 # the list of files to clean
@@ -28,7 +28,9 @@ main.o: main.c rterm.h listbox.h scbuf.h keyb.h ui.h fileb.h tm.h listc.h
 fileb.o: fileb.c fileb.h
 keyb.o: keyb.c rterm.h keyb.h
 listbox.o: listbox.c scbuf.h keyb.h
+editor.o: scbuf.h keyb.h rterm.h
 rterm.o: rterm.c 
+menu.o: listbox.c scbuf.h ui.h keyb.h rterm.h
 tm.o: tm.c tm.h
 global.o: global.c global.h
 scbuf.o: scbuf.c rterm.h keyb.h scbuf.h
