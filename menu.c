@@ -127,6 +127,8 @@ char ch=0;
 
 char filemenu() {  
   char ch=0;
+  int countCh = 0;
+  char tempfileName[MAXFILENAME];
   write_str(screen1,0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
   write_str(screen1,0, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1,1);
   loadmenus(FILE_MENU);
@@ -146,9 +148,12 @@ char filemenu() {
   if(scrollData.itemIndex == OPTION_2) {
     //External Module - Open file dialog.
     //openFileHandler();
-    //flush_editarea();
-     inputWindow("File:", fileName,  "Quick load...");
-     if (strlen(fileName)>0) {
+      
+      flush_editarea(0);
+      buffertoScreen(0, 0,0);
+      countCh=inputWindow("File:", tempfileName,  "Quick load...");
+      if (countCh>0) {
+	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
          flush_editarea(0);
          buffertoScreen(0, 0,0);
@@ -158,15 +163,42 @@ char filemenu() {
 
   }
   if(scrollData.itemIndex == OPTION_3) {
-    //Save option
-    inputWindow("File:", fileName,  "Save file as...");
-    if (strlen(fileName)>0) buffertoFile(fileName);
-    return DONT_UPDATE;
+       //Save file
+       flush_editarea(0);
+      buffertoScreen(0, 0,0);
+    	
+	if (strcmp(fileName, "UNTITLED") == 0) {
+        countCh=inputWindow("File:", tempfileName,  "Save file as...");
+        if (countCh>0) {
+	   strcpy(fileName, tempfileName);
+	   buffertoFile(fileName);
+	   flush_editarea(0);
+	   buffertoScreen(0, 0,0);
+          dump_screen(screen1);
+	}	
+       } else{
+	   buffertoFile(fileName);
+	   flush_editarea(0);
+	   buffertoScreen(0, 0,0);
+          dump_screen(screen1);
+       }
+
+
+     return DONT_UPDATE;
   }
   if(scrollData.itemIndex == OPTION_4) {
-    //Save as option  
-      //saveasDialog(currentFile);
-      //refresh_screen(-1);
+    //Save as option
+       flush_editarea(0);
+      buffertoScreen(0, 0,0);
+  
+    countCh=inputWindow("File:", fileName,  "Save file as...");
+    if (countCh>0) {
+      buffertoFile(fileName);
+      flush_editarea(0);
+      buffertoScreen(0, 0,0);
+      dump_screen(screen1);
+    }
+    return DONT_UPDATE;
   }
 
   if(scrollData.itemIndex == OPTION_5) {

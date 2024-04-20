@@ -87,6 +87,9 @@ void draw_screen(){
   write_ch(screen1, 2, old_rows - 1, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,0);
   write_ch(screen1, 1, old_rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   write_ch(screen1, old_columns - 2, old_rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
+  strcpy(fileName, "UNTITLED");
+  write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
+        MENU_PANEL, MENU_FOREGROUND0,0); 
 
   dump_screen(screen1);
   //Save screen for later
@@ -155,9 +158,6 @@ wchar_t code_point;
     write_num(screen1, new_columns - 20, new_rows, posBufY, STATUSBAR, STATUSMSG,1);
     update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
-    strcpy(fileName, "UNKNOWN");
-    write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
-        MENU_PANEL, MENU_FOREGROUND0,1); 
 }
 
 
@@ -229,6 +229,8 @@ int control_keys(char ch){
   char    returnMenuChar=0;
   int menuCounter = 0;
   int returnValue=0;
+  char countCh=0;
+  char tempfileName[MAXFILENAME];
     if(ch == K_CTRL_L) {
       //Akin to F2
 	handlemenus(&returnMenuChar, &menuCounter,TRUE);
@@ -237,14 +239,20 @@ int control_keys(char ch){
       returnValue  = ENDSIGNAL;
     }
     if (ch == K_CTRL_A) {
-      inputWindow("File:", fileName,  "Quick load...");
-     if (strlen(fileName)>0) {
+       flush_editarea(0);
+      buffertoScreen(0, 0,0);
+      countCh=inputWindow("File:", tempfileName,  "Quick load...");
+      if (countCh>0) {
+	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
          flush_editarea(0);
          buffertoScreen(0, 0,0);
-         dump_screen(screen1);
-      } 
-    }	    
+        dump_screen(screen1);
+     }//buffertoScreen(0, 0, 0);
+ 
+    }
+
+ 
   return returnValue;
 }
 
@@ -265,6 +273,8 @@ int special_keys() {
   char    chartrail[5];
   char    returnMenuChar=0;
   int menuCounter = 0;
+  int countCh = 0;
+  char tempfileName[MAXFILENAME];
     old_cursorX = cursorX;
     old_cursorY = cursorY;
     oldposBufX = posBufX;
@@ -353,8 +363,26 @@ int special_keys() {
     } else if(strcmp(chartrail, K_ALT_A) == 0) {
       //saveasDialog(currentFile);    //Save as.. file
       //refresh_screen(-1);
-    } else if(strcmp(chartrail, K_ALT_D) == 0) {
-      //fileInfoDialog();     //Info file
+    } else if(strcmp(chartrail, K_ALT_S) == 0) {
+      //Save file
+         flush_editarea(0);
+      buffertoScreen(0, 0,0);
+ 
+    	    if (strcmp(fileName, "UNTITLED") == 0) {
+        countCh=inputWindow("File:", tempfileName,  "Save file as...");
+        if (countCh>0) {
+	   strcpy(fileName, tempfileName);
+	   buffertoFile(fileName);
+	   flush_editarea(0);
+	   buffertoScreen(0, 0,0);
+          dump_screen(screen1);
+	}	
+       } else{
+	   buffertoFile(fileName);
+	   flush_editarea(0);
+	   buffertoScreen(0, 0,0);
+          dump_screen(screen1);
+       }
     } else if(strcmp(chartrail, K_ALT_W) == 0) {
       //if(strcmp(currentFile, UNKNOWN) == 0)
     //saveasDialog(currentFile);  //Write to file
