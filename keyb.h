@@ -61,6 +61,7 @@ Last modified: 14/04/2019 Rename Headers
 #define K_CTRL_M 0x0D
 #define K_CTRL_J 0x0A
 #define K_CTRL_L 0x0C
+#define K_CTRL_O 0x0F
 #define K_CTRL_S 0x13
 
 #define K_ALT_X "\ex"

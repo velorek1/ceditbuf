@@ -13,7 +13,7 @@
 #include "tm.h"
 #include "keyb.h"
 #include "global.h"
-
+#include "editor.h"
 /*--------------------------------------------*/
 /* Load current menu into circular linked list*/
 /*--------------------------------------------*/
@@ -84,7 +84,7 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
       if (horizontalMenu) *returnMenuChar= horizontal_menu();  
       do{
       switch (*returnMenuChar) {
-	case 0: *menuCounter=FILE_MENU; *returnMenuChar=filemenu(); xor_update(screen2,screen1); break;
+	case 0: *menuCounter=FILE_MENU; *returnMenuChar=filemenu();  if (*returnMenuChar != DONT_UPDATE) xor_update(screen2,screen1); break;
      	case 1: *menuCounter=OPT_MENU; *returnMenuChar=optionsmenu();  xor_update(screen2,screen1); break;
 	case 2: *menuCounter=HELP_MENU; *returnMenuChar=helpmenu(); xor_update(screen2,screen1);  break;
 	default:
@@ -92,6 +92,7 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
       }       
       *menuCounter=*menuCounter + *returnMenuChar;  
       if (*returnMenuChar == K_ENTER) break;
+      if (*returnMenuChar == DONT_UPDATE) break;
       if (*returnMenuChar != ESC_KEY ) {
      			copy_screen(screen1,screen2);
 	      		//euclidian modulo, we circle back through the different switch cases
@@ -99,8 +100,11 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
 	 }
 
      } while (*returnMenuChar != ESC_KEY);
-     xor_update(screen2,screen1);
-     copy_screen(screen1,screen2);
+     //xor_update(screen2,screen1);
+    if (*returnMenuChar != DONT_UPDATE){
+      copy_screen(screen1,screen2);
+      dump_screen(screen1);
+   }
 }
 //Entry menu- horizontal
 char horizontal_menu() {
@@ -128,6 +132,10 @@ char filemenu() {
   loadmenus(FILE_MENU);
   draw_window(screen1,0, 2, 12, 8, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
   ch = listBox(listBox1, 3, 3 , &scrollData, MENU_PANEL, MENU_FOREGROUND0,  MENU_SELECTOR, MENU_FOREGROUND1,  -1, VERTICALWITHBREAK,0,1); 
+     copy_screen(screen1,screen2);
+     dump_screen(screen1);
+ 
+  //return scrollData.itemIndex;
   if(scrollData.itemIndex == OPTION_1) {
     //New file option
     //newDialog(currentFile);
@@ -139,9 +147,21 @@ char filemenu() {
     //External Module - Open file dialog.
     //openFileHandler();
     //flush_editarea();
+     inputWindow("File:", fileName,  "Quick load...");
+     if (strlen(fileName)>0) {
+	 filetoBuffer(fileName);
+         flush_editarea(0);
+         buffertoScreen(0, 0,0);
+        dump_screen(screen1);
+     }//buffertoScreen(0, 0, 0);
+     return DONT_UPDATE;
+
   }
   if(scrollData.itemIndex == OPTION_3) {
     //Save option
+    inputWindow("File:", fileName,  "Save file as...");
+    if (strlen(fileName)>0) buffertoFile(fileName);
+    return DONT_UPDATE;
   }
   if(scrollData.itemIndex == OPTION_4) {
     //Save as option  

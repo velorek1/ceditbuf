@@ -40,7 +40,8 @@ int cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y;
 int old_cursorX = START_CURSOR_X, old_cursorY = START_CURSOR_Y;
 long posBufX = 0, posBufY = 0;
 long oldposBufX = 0, oldposBufY = 0;
-
+int unwantedChars = 0; //try to avoid printing unwanted characgters from cursor chars counter
+		
 //TEXT BUFFER POINTERS
 int  hdisplayLimit=0; //horizontal scroll, last char position in line that allows scroll
 int  currentColumn=0; //horizontal scroll, pointer to current char position in line
@@ -50,6 +51,10 @@ long currentLine=0; //verticall scroll, pointer to current top line in scroll
 int vscrollActive=0; //vertical scroll, vertical scroll is posible
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
 int     programStatus = 0; //signal for overall program Status
+char fileName[MAXFILENAME]; 
+
+FILE *filePointer;
+int fileModified=FILE_UNMODIFIED;
 
 int initCEDIT(){
    get_terminal_dimensions(&new_rows,&new_columns);
@@ -60,7 +65,8 @@ int initCEDIT(){
    cursor_timer1.ticks=0;
    //Init Text buffer
    VLINES tempLine = {0};
-
+  
+   memset(&fileName, '\0',sizeof(fileName)); //Clear fileName
    memset(&tempLine, '\0',sizeof(tempLine)); //Clear memory for temporary line
    //Create one screen in memory
    if (screen1 != NULL) deleteList(&screen1);

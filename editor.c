@@ -17,6 +17,7 @@
 #include "keyb.h"
 #include "global.h"
 #include "editor.h"
+#include "fileb.h"
 
 wchar_t convertChar(char c1, char c2) {
     // Given the two-byte representation for a Char get the wchar convrsion
@@ -82,7 +83,7 @@ void linetoScreen(long whereY, VLINES tempLine){
        }
    }
 
-   //dump_screen(screen1);
+  // dump_screen(screen1);
 }
 
 
@@ -127,6 +128,28 @@ void buffertoScreen(long startPoint, long activeline, BOOL raw){
     resetAnsi(0);
 }
 
+void buffertoFile(char *fileName){
+  long j=0,i=0; 
+  wchar_t tempLongChar = 0;
+  openFile(&filePointer, fileName, "w");
+  for (j=0; j<_length(&edBuf1); j++){
+       //tempLine = {0};
+      _dumpLine(edBuf1, j, &tempLine);
+      for (i=0; i<findEndline(tempLine); i++){
+
+	  if(tempLine.linea[i].specialChar != 0) {
+            tempLongChar = convertChar(tempLine.linea[i].specialChar, tempLine.linea[i].ch);         // Special character
+            fprintf(filePointer, "%lc", tempLongChar); 
+	  }else{		 
+            //regular ASCII char
+            fprintf(filePointer, "%c", tempLine.linea[i].ch); 
+	  }
+      }
+      fprintf(filePointer,"%c" , END_LINE_CHAR);
+  }
+  closeFile(filePointer);
+};
+
 int editor_section(char ch){
 char accentchar[2];
 int insertMode=0;
@@ -149,6 +172,7 @@ int endLine=0;
        //Check whether we are on Readmode
        // if (fileModified != FILE_READMODE) {
      //Process normal printable chars first
+     if (ch == 27) return 0;
      if ((ch > 31 && ch < 127) || ch < 0) {
 	if (ch < 0) {
 	    read_accent(&newch, accentchar);
@@ -412,7 +436,7 @@ int endLine=0;
 		{
 	            tempLine.linea[i].ch = FILL_CHAR;
                     tempLine.linea[i].specialChar = 0;
-                    tempLine.linea[i].attrib = 0;
+                    tempLine.linea[i].attrib = EDIT_FORECOLOR;
 	      }      
 	      posBufX=posBufX + TAB_SPACES;
 	      if (cursorX < new_columns-8) {
@@ -425,4 +449,140 @@ int endLine=0;
    return 0; 
 }
 
+/*------------------------------*/
+/* Open file and dump to buffer */
+/*------------------------------*/
 
+int filetoBuffer(char *fileName) { //EDBUF*
+  long     inlineChar = 0, lineCounter = 0;
+  //wchar_t tempLongChar = 0;
+  char    ch;
+  int attrib = EDIT_FORECOLOR;
+  fileModified = FILE_UNMODIFIED;
+  
+  openFile(&filePointer, fileName, "r");
+  memset(&tempLine, '\0',sizeof(tempLine));
+  tempLine.index = 0;
+  if (edBuf1 != NULL) _deletetheList(&edBuf1);
+  edBuf1 = _addatend(edBuf1, _newline(tempLine));
+
+  //Check if pointer is valid
+  if(filePointer != NULL) {
+    rewind(filePointer);        //Make sure we are at the beginning
+    ch = getc(filePointer);     //Peek ahead in the file
+    while(!feof(filePointer)) {
+      if(ch != '\0') {
+    //Temporary restrictions until scroll is implemented.
+    //if(lineCounter == rows - 4)
+    //  break;
+
+    if(ch == SPECIAL_CHARS_SET1 || ch == SPECIAL_CHARS_SET2) {
+      tempLine.linea[inlineChar].specialChar = ch;
+      //Read accents
+      ch = getc(filePointer);
+      tempLine.linea[inlineChar].ch = ch;
+    } else {
+      if(ch > 0)
+       tempLine.linea[inlineChar].ch = ch;
+    }
+       //SYNTAX HIGHLIGHTING DEMO
+      //Highlight numbers in GREEN
+      attrib = EDIT_FORECOLOR;
+      if ((ch >= 48) && (ch <=57)) attrib = FH_GREEN; 
+      //Highlight special characters in CYAN
+      
+      if ((ch >= 33) && (ch <=47)) attrib = FH_CYAN; 
+      if ((ch >= 58) && (ch <=64)) attrib = FH_CYAN; 
+      if ((ch >= 91) && (ch <=96)) attrib = FH_CYAN; 
+      if ((ch >= 123) && (ch <=126)) attrib = FH_CYAN; 
+
+   
+     tempLine.linea[inlineChar].attrib = attrib;
+        //TABs are converted into spaces
+      /*  if(ch == K_TAB) {
+        for (tabcount=0;tabcount<TAB_DISTANCE;tabcount++){
+          ch = FILL_CHAR;
+          writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
+          inlineChar++;
+        }*/
+
+    inlineChar++; //NEXT CHARACTER
+
+    if(ch == END_LINE_CHAR) {
+      inlineChar = 0;
+      ch = 0;
+      _updateLine(edBuf1, lineCounter, &tempLine);
+      lineCounter++;
+      memset(&tempLine, '\0',sizeof(tempLine));
+      tempLine.index = _length(&edBuf1);
+      edBuf1 = _addatend(edBuf1, _newline(tempLine));
+    }
+       if (lineCounter == MAX_LINES) {
+           //open as readMode
+           fileModified = FILE_READMODE;
+           break;
+       }
+       //If file is bigger than buffer
+      //break loop at last allowed line.
+      }
+      ch = getc(filePointer);
+    }
+  }
+  closeFile(filePointer);
+  return 1;
+}
+
+void flush_editarea(int force_update) {
+int i;
+  //Paint blue edit area
+  //draw_screen();
+  screen_color(screen1, EDITAREACOL, EDITAREACOL, FILL_CHAR);
+  //Draw upper and lower bars
+    for(i = 0; i < old_columns; i++) {
+     write_ch(screen1, i, 1, FILL_CHAR, MENU_PANEL, MENU_PANEL,0);
+    }
+
+  for(i = 0; i < old_columns; i++) {
+    write_ch(screen1, i, old_rows, FILL_CHAR, STATUSBAR, STATUSMSG,1);
+  }
+  // Text messages
+  write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,0);
+  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,0);
+  write_str(screen1, 7, 1, "p", MENU_PANEL, F_RED,0);
+  write_str(screen1, 15, 1, "H", MENU_PANEL, F_RED,0);
+  write_str(screen1, 0, old_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,0);
+
+  /* Frames */
+  //window appearance and scroll bar
+  for(i = 2; i < old_rows; i++) {
+    write_ch(screen1,old_columns-1, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,0);	//Scroll bar
+    write_ch(screen1,0, i, VER_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE,0);	//upper vertical line box-like char 
+  }
+  for(i = 0; i < old_columns; i++) {
+    write_ch(screen1,i, 2, HOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE,0);	//horizontal line box-like char
+    write_ch(screen1,i, old_rows - 1, ' ', EDITWINDOW_BACK, EDITWINDOW_FORE,0);
+  }
+  write_ch(screen1,0, 2, UPPER_LEFT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE,0);	//upper-left box-like char
+  //horizontal scroll bar
+  for(i = 0; i < old_columns; i++) {
+    write_ch(screen1,i, old_rows - 1, FILL_CHAR, SCROLLBAR_BACK, SCROLLBAR_FORE,0);
+  }
+  //Window-appearance
+  write_ch(screen1,old_columns-1, 2, UPPER_RIGHT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE,0);	//right window corner
+  write_ch(screen1,old_columns-1, old_rows - 1, LOWER_RIGHT_CORNER, EDITWINDOW_BACK,
+	   EDITWINDOW_FORE,0);
+  write_ch(screen1, 0, old_rows - 1, LOWER_LEFT_CORNER, EDITWINDOW_BACK,
+	   EDITWINDOW_FORE,0);
+
+  //Scroll symbols
+  write_ch(screen1,old_columns-1, 3, '^', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
+  write_ch(screen1, old_columns-1, old_rows - 2, 'v', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
+  write_ch(screen1, old_columns-1, 4, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,0);
+  write_ch(screen1, 2, old_rows - 1, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,0);
+  write_ch(screen1, 1, old_rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
+  write_ch(screen1, old_columns - 2, old_rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
+
+  write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
+        MENU_PANEL, MENU_FOREGROUND0,0);
+ if (force_update) dump_screen(screen1);
+}

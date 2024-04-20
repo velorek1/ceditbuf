@@ -155,12 +155,16 @@ wchar_t code_point;
     write_num(screen1, new_columns - 20, new_rows, posBufY, STATUSBAR, STATUSMSG,1);
     update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
+    strcpy(fileName, "UNKNOWN");
+    write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
+        MENU_PANEL, MENU_FOREGROUND0,1); 
 }
 
 
 int main(){
 
 char ch=0;
+char old_ch=0;
 int keypressed = 0;
 int esc_key = 0;
 
@@ -189,24 +193,30 @@ int esc_key = 0;
 	 if (timerC(&cursor_timer1) == TRUE){
 	      //Animation
              cursor_tick();
+	     if (keypressed == FALSE) { esc_key = 0; unwantedChars =0;}
            }
 	//PROCESS INPUT
     	 keypressed = kbhit(1);
-	 if (keypressed == TRUE) {
+          if (keypressed == TRUE) {
+	   keypressed = FALSE;
+	   //try to catch and avoid printing unwanted chars with cursor keys
+	   old_ch = ch;
 	   ch=readch();
+	   if (old_ch==ESC_KEY) esc_key = 1;
+	   if (unwantedChars>0) esc_key = 1;
 	   //Keys with a escape sequenece
            if (ch == ESC_KEY) {buffertoScreen(0, 0,FALSE); esc_key = special_keys(); cursor_tick(); ch = 0;}       
-              	   else {
+           else {
 		//Capture control keys   
-		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)){buffertoScreen(0, 0,FALSE); esc_key= control_keys(ch);}   
+		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)){buffertoScreen(0, 0,FALSE); esc_key= control_keys(ch); ch=0;}   
 		else 
 	         //Process raw edit input from keyboard in editor.c		
-		  if (ch != 0) editor_section(ch);
+		{
+		  //try to avoid printing unwanted chars with cursor keys
+		  if (ch != 0 && esc_key==0 && unwantedChars == 0) editor_section(ch);
+	        }
 	   }
-	 }
-         else
-          ch=0;
-	 
+        }	   
 	//Check for ESC-related keys
       } while (esc_key != ENDSIGNAL);     
     //restore terminal
@@ -226,6 +236,15 @@ int control_keys(char ch){
     if(ch == K_CTRL_C) {
       returnValue  = ENDSIGNAL;
     }
+    if (ch == K_CTRL_A) {
+      inputWindow("File:", fileName,  "Quick load...");
+     if (strlen(fileName)>0) {
+	 filetoBuffer(fileName);
+         flush_editarea(0);
+         buffertoScreen(0, 0,0);
+         dump_screen(screen1);
+      } 
+    }	    
   return returnValue;
 }
 
@@ -272,6 +291,7 @@ int special_keys() {
       // ARROW KEYS
     } else if(strcmp(chartrail, K_LEFT_TRAIL) == 0) {
       //Left-arrow key
+      unwantedChars++;
       if(cursorX > 1){
         cursorX = cursorX - 1;
         //editScroll.bufferX--;
@@ -279,6 +299,7 @@ int special_keys() {
       if (posBufX>0) posBufX--;
     } else if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
       //Right-arrow key
+      unwantedChars++;
       if(cursorX < new_columns - 2){
         cursorX = cursorX + 1;
         //editScroll.bufferX++;
@@ -286,6 +307,7 @@ int special_keys() {
       posBufX++;
     } else if(strcmp(chartrail, K_UP_TRAIL) == 0) {
       //Up-arrow key
+      unwantedChars++;
       if(cursorY > 2) {
        cursorY = cursorY - 1;
         
@@ -295,7 +317,8 @@ int special_keys() {
     } else if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
       //Down-arrow key
      //Check if there are more lines to go to
-      if (posBufY<_length(&edBuf1)){
+      unwantedChars++;
+      if (posBufY<_length(&edBuf1)-1){
         if(cursorY < new_rows - 3) {
           //stay put if we are are the end of the viewing area
           cursorY = cursorY + 1;  
@@ -326,6 +349,7 @@ int special_keys() {
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
       //newDialog(currentFile);   // New file
       //refresh_screen(-1);
+      resetch();
     } else if(strcmp(chartrail, K_ALT_A) == 0) {
       //saveasDialog(currentFile);    //Save as.. file
       //refresh_screen(-1);
@@ -388,7 +412,7 @@ void credits() {
   //free memory
   if (screen1 != NULL) deleteList(&screen1);
   if (screen2 != NULL) deleteList(&screen2);
-  
+  if (listBox1 != NULL) removeList(&listBox1);
   close_term();			//restore terminal settings from failsafe
   showcursor();
   resetAnsi(0);

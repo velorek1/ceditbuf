@@ -102,6 +102,7 @@ extern int WINDOW_TITLEF;
 #define YESNO_MENU 3
 #define OK_MENU 4
 #define MAX_FILENAME 100
+#define MAX_LINES 100000
 
 //DROP-DOWN MENUS
 #define OPTION_1 0
@@ -113,7 +114,7 @@ extern int WINDOW_TITLEF;
 #define CONFIRMATION 1
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
 #define K_RIGHTMENU 1		//Right arrow key pressed while in menu
-
+#define DONT_UPDATE -5
 //MENU CONSTANTS
 #define HOR_MENU -1
 #define FILE_MENU 0
@@ -121,10 +122,14 @@ extern int WINDOW_TITLEF;
 #define HELP_MENU 2
 #define YESNO_MENU 3
 #define OK_MENU 4
-#define MAX_FILENAME 100
+#define MAXFILENAME 100
 #define OK_MENU2 5
 #define COLORS_MENU 6
 
+//FILE CONSTANTS
+#define FILE_MODIFIED 1
+#define FILE_UNMODIFIED 0
+#define FILE_READMODE 2
 //extern char aboutMSG[7][MAXLINE];
 
 extern int new_rows, new_columns, old_rows, old_columns;	// Terminal dimensions
@@ -132,7 +137,7 @@ extern int cursorX, cursorY; //position on screen X:[0, columns -2] Y:[0, rows-3
 extern int old_cursorX, old_cursorY;
 extern long posBufX, posBufY; //position in the edit buffer X:[0,1022] Y:[0,13000]
 extern long oldposBufX, oldposBufY; //position in the edit buffer X:[0,1022] Y:[0,13000]
-
+extern int unwantedChars;
 int _animation();
 int initCEDIT(); 
 
@@ -141,6 +146,7 @@ int initCEDIT();
 extern VLINES *edBuf1; //Buffer vector of lines(1022 chars)
 extern VLINES tempLine;
 
+extern FILE *filePointer;
 extern int  hdisplayLimit; //horizontal scroll, last char position in line that allows scroll
 extern int  currentColumn; //horizontal scroll, pointer to current char position in line
 extern long linesinFile; //vertical scroll
@@ -148,6 +154,8 @@ extern long vdisplayLimit; //vertical scroll, last line that allows scroll
 extern long currentLine; //verticall scroll, pointer to current top line in scroll
 extern int vscrollActive; //vertical scroll, vertical scroll is posible
 extern int programStatus; //signal for overall program status
+extern char fileName[MAXFILENAME]; 
+extern int fileModified;
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
 
 

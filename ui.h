@@ -22,6 +22,7 @@ int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
 void window(SCREENCELL *screen1, int x1, int y1, int x2, int y2, int backcolor,
          int bordercolor, int titlecolor, int border, int title, int shadow);
 
+int inputWindow(char *label, char *tempFile, char *windowTitle);
 #endif
 
 

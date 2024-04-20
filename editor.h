@@ -13,6 +13,7 @@ Last modified: 06/04/2024
 
 #include "scbuf.h"
 #include "global.h"
+#include "edbuf.h"
 #include <stdio.h>
 int process_input(char ch);
 int special_keys();
@@ -22,8 +23,12 @@ void linetoScreenRAW(long whereY, VLINES tempLine);
 void cleanScreenLine(long whereY);
 void cleanSection(long whereY, long start, int amount);
 void buffertoScreen(long startPoint, long activeline, BOOL raw);
+void buffertoFile();
 int editor_section(char ch);
 wchar_t convertChar(char c1, char c2);
+//int filetoBuffer(FILE * filePtr);
+int filetoBuffer(char *fileName);
+void flush_editarea(int force_update);
 #endif
 
 
