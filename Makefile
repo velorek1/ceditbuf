@@ -1,7 +1,7 @@
 .POSIX:
 TARGET = cedit
 CC     = cc
-CFLAGS = -Wall -Wextra  
+CFLAGS = -Wall -Wextra -fsigned-char   
 LDFLAGS =
 LDLIBS  =
 

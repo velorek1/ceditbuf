@@ -27,6 +27,7 @@ void buffertoFile();
 int editor_section(char ch);
 wchar_t convertChar(char c1, char c2);
 //int filetoBuffer(FILE * filePtr);
+void buffertoFile(char *fileName);
 int filetoBuffer(char *fileName);
 void flush_editarea(int force_update);
 #endif

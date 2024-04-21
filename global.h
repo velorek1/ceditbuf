@@ -11,8 +11,8 @@
 #include "edbuf.h" 
 #include "listbox.h" 
 
-#define TIMER_SPEED 150 //animation
-#define TIMER_SPEED2 50 //cursor
+#define TIMER_SPEED 100 //animation
+#define TIMER_SPEED2 30 //cursor
 #define END_LINE_CHAR 0x0A
 #define FILL_CHAR 0x20
 #define ENDSIGNAL -1
@@ -101,7 +101,7 @@ extern int WINDOW_TITLEF;
 #define HELP_MENU 2
 #define YESNO_MENU 3
 #define OK_MENU 4
-#define MAX_FILENAME 100
+#define MAX_FILENAME 255
 #define MAX_LINES 100000
 
 //DROP-DOWN MENUS
@@ -110,10 +110,11 @@ extern int WINDOW_TITLEF;
 #define OPTION_3 2
 #define OPTION_4 3
 #define OPTION_5 4
+#define OPTION_6 5
 #define OPTION_NIL -1		//Reset option
 #define CONFIRMATION 1
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
-#define K_RIGHTMENU 1		//Right arrow key pressed while in menu
+#define K_RIGHTMENU -2		//Right arrow key pressed while in menu
 #define DONT_UPDATE -5
 //MENU CONSTANTS
 #define HOR_MENU -1

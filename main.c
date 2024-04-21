@@ -23,6 +23,7 @@ void draw_screen();
 void cursor_tick();
 int special_keys();
 int control_keys(char ch);
+void _resizeScreen();
 wchar_t currentChar = 0;
 
 void draw_screen(){
@@ -186,7 +187,7 @@ int esc_key = 0;
 	    //Refresh screen size buffers if terminal dimension changes
 	    if (new_rows != old_rows || new_columns != old_columns)
             {
-	      draw_screen();
+	      _resizeScreen();
             }
 	  }
          //Cursor Animation	 
@@ -241,7 +242,7 @@ int control_keys(char ch){
     if (ch == K_CTRL_A) {
        flush_editarea(0);
       buffertoScreen(0, 0,0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...");
+      countCh=inputWindow("File:", tempfileName,  "Quick load...",34,2,60);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -369,7 +370,7 @@ int special_keys() {
       buffertoScreen(0, 0,0);
  
     	    if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...");
+        countCh=inputWindow("File:", tempfileName,  "Save file as...",34,2,60);
         if (countCh>0) {
 	   strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
@@ -479,4 +480,16 @@ void credits() {
   resetAnsi(0);
  // close_term();
 }
+void _resizeScreen(){
+//redraw everything when screen size changes
+	get_terminal_dimensions(&new_rows, &new_columns);
+	if (screen1 != NULL) deleteList(&screen1);
+	if (screen2 != NULL) deleteList(&screen2);
+	create_screen(&screen1);
+	create_screen(&screen1);
+	draw_screen();
+	flush_editarea(0);
+        buffertoScreen(0, 0,0);
+        dump_screen(screen1);
 
+}

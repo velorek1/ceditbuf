@@ -32,6 +32,7 @@ void loadmenus(int choice) {
  	if (listBox1 != NULL) removeList(&listBox1);
 	listBox1 = addatend(listBox1, newitem("New", -1, -1));
 	listBox1 = addatend(listBox1, newitem("Open", -1, -1));
+	listBox1 = addatend(listBox1, newitem("Quick load", -1, -1));
 	listBox1 = addatend(listBox1, newitem("Save", -1, -1));
 	listBox1 = addatend(listBox1, newitem("Save as...", -1, -1));
 	listBox1 = addatend(listBox1, newitem("Exit", -1, -1));
@@ -89,7 +90,9 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
 	case 2: *menuCounter=HELP_MENU; *returnMenuChar=helpmenu(); xor_update(screen2,screen1);  break;
 	default:
 		break;
-      }       
+      } 
+      //convert -2 from right cursor to 1 to advance     
+      if (*returnMenuChar == -2 ) *returnMenuChar = 1; 
       *menuCounter=*menuCounter + *returnMenuChar;  
       if (*returnMenuChar == K_ENTER) break;
       if (*returnMenuChar == DONT_UPDATE) break;
@@ -132,26 +135,36 @@ char filemenu() {
   write_str(screen1,0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
   write_str(screen1,0, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1,1);
   loadmenus(FILE_MENU);
-  draw_window(screen1,0, 2, 12, 8, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
+  draw_window(screen1,0, 2, 13, 9, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
   ch = listBox(listBox1, 3, 3 , &scrollData, MENU_PANEL, MENU_FOREGROUND0,  MENU_SELECTOR, MENU_FOREGROUND1,  -1, VERTICALWITHBREAK,0,1); 
      copy_screen(screen1,screen2);
      dump_screen(screen1);
- 
-  //return scrollData.itemIndex;
+      
+  //return if right and left arrow keys are pressed
+  if (ch == K_RIGHTMENU || ch == K_LEFTMENU) return ch;
+
   if(scrollData.itemIndex == OPTION_1) {
-    //New file option
-    //newDialog(currentFile);
-    //Update new global file name
-    //refresh_screen(-1);
-     //programStatus  = ENDSIGNAL;
+    flush_editarea(0);
+      buffertoScreen(0, 0,0);
+      countCh=inputWindow("File:", tempfileName,  "[+] New file",34,2,60);
+      if (countCh>0) {
+	 strcpy(fileName, tempfileName);
+	 filetoBuffer(fileName);
+         flush_editarea(0);
+         buffertoScreen(0, 0,0);
+        dump_screen(screen1);
+     }//buffertoScreen(0, 0, 0);
+      ch=0;
+     return DONT_UPDATE;
   }
-  if(scrollData.itemIndex == OPTION_2) {
+  
+  if(scrollData.itemIndex == OPTION_3) {
     //External Module - Open file dialog.
     //openFileHandler();
       
       flush_editarea(0);
       buffertoScreen(0, 0,0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...");
+      countCh=inputWindow("File:", tempfileName,  "Quick load...",34,2,60);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -162,15 +175,15 @@ char filemenu() {
      return DONT_UPDATE;
 
   }
-  if(scrollData.itemIndex == OPTION_3) {
+  if(scrollData.itemIndex == OPTION_4) {
        //Save file
        flush_editarea(0);
       buffertoScreen(0, 0,0);
     	
 	if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...");
+        countCh=inputWindow("File:", tempfileName,  "Save file as...",34,2,60);
         if (countCh>0) {
-	   strcpy(fileName, tempfileName);
+	  strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
 	   flush_editarea(0);
 	   buffertoScreen(0, 0,0);
@@ -186,12 +199,12 @@ char filemenu() {
 
      return DONT_UPDATE;
   }
-  if(scrollData.itemIndex == OPTION_4) {
+  if(scrollData.itemIndex == OPTION_5) {
     //Save as option
        flush_editarea(0);
       buffertoScreen(0, 0,0);
   
-    countCh=inputWindow("File:", fileName,  "Save file as...");
+    countCh=inputWindow("File:", fileName,  "Save file as...",34,2,60);
     if (countCh>0) {
       buffertoFile(fileName);
       flush_editarea(0);
@@ -201,7 +214,7 @@ char filemenu() {
     return DONT_UPDATE;
   }
 
-  if(scrollData.itemIndex == OPTION_5) {
+  if(scrollData.itemIndex == OPTION_6) {
     //Exit option
     //if(fileModified == 1)
       //exitp = confirmation();	//Shall we exit? Global variable!

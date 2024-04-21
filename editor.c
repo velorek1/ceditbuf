@@ -18,6 +18,7 @@
 #include "global.h"
 #include "editor.h"
 #include "fileb.h"
+#include "edbuf.h"
 
 wchar_t convertChar(char c1, char c2) {
     // Given the two-byte representation for a Char get the wchar convrsion

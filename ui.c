@@ -190,21 +190,21 @@ void window(SCREENCELL *screen1, int x1, int y1, int x2, int y2, int backcolor,
  // dump_screen(screen1);
 }
 
-int inputWindow(char *label, char *tempFile, char *windowTitle) {
+int inputWindow(char *label, char *tempFile, char *windowTitle,  int offsetX, int offsetY, int length) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     count = 0;
   copy_screen(screen2,screen1);
-  window_y1 = (new_rows / 2) - 2;
+  window_y1 = (new_rows / 2) - offsetY;
   window_y2 = (new_rows / 2);
-  window_x1 = (new_columns / 2) - 14;
-  window_x2 = (new_columns / 2) + 14;
+  window_x1 = (new_columns / 2) - offsetX;
+  window_x2 = (new_columns / 2) + offsetX;
   
   window(screen1,window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
           WINDOW_TITLEB,1,1,1);
   write_str(screen1, (window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF,0);
   dump_screen(screen1);
   count =
-      textbox(screen1, window_x1 + 1, window_y1 + 1, 20, label, tempFile, MENU_PANEL,
+      textbox(screen1, window_x1 + 1, window_y1 + 1, length, label, tempFile, MENU_PANEL,
           MENU_FOREGROUND0, MENU_FOREGROUND0,1,1);
   copy_screen(screen1,screen2);
   dump_screen(screen1);
