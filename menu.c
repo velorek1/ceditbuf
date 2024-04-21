@@ -164,7 +164,7 @@ char filemenu() {
       
       flush_editarea(0);
       buffertoScreen(0, 0,0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...",34,2,60);
+      countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -181,7 +181,7 @@ char filemenu() {
       buffertoScreen(0, 0,0);
     	
 	if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...",34,2,60);
+        countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
         if (countCh>0) {
 	  strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
@@ -204,7 +204,7 @@ char filemenu() {
        flush_editarea(0);
       buffertoScreen(0, 0,0);
   
-    countCh=inputWindow("File:", fileName,  "Save file as...",34,2,60);
+    countCh=inputWindow("File:", fileName,  "Save file as...",28,2,48);
     if (countCh>0) {
       buffertoFile(fileName);
       flush_editarea(0);

@@ -242,7 +242,7 @@ int control_keys(char ch){
     if (ch == K_CTRL_A) {
        flush_editarea(0);
       buffertoScreen(0, 0,0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...",34,2,60);
+      countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -370,7 +370,7 @@ int special_keys() {
       buffertoScreen(0, 0,0);
  
     	    if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...",34,2,60);
+        countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
         if (countCh>0) {
 	   strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
