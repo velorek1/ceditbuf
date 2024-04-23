@@ -15,7 +15,7 @@ wchar_t convertChar(char c1, char c2) {
 
     wchar_t wchar;
 
-    mbstowcs(&wchar, temp, 1);
+    mbstowcs(&wchar, temp, 2);
 
     return wchar;
 }
@@ -25,3 +25,4 @@ int main(){
     printf("Wide character representation: %lc\n", convertChar(-61,-111));
 
 }
+

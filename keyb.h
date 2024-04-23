@@ -57,10 +57,12 @@ Last modified: 14/04/2019 Rename Headers
 #define K_CTRL_B 0x02
 #define K_CTRL_C 0x03
 #define K_CTRL_D 0x04
-#define K_CTRL_H 0x08
-#define K_CTRL_M 0x0D
+#define K_CTRL_E 0x05
 #define K_CTRL_J 0x0A
 #define K_CTRL_L 0x0C
+#define K_CTRL_H 0x08
+#define K_CTRL_M 0x0D
+#define K_CTRL_N 0x0E
 #define K_CTRL_O 0x0F
 #define K_CTRL_S 0x14
 

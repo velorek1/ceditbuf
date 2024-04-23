@@ -262,8 +262,19 @@ int control_keys(char ch){
          buffertoScreen(0, 0,0);
         dump_screen(screen1);
      }//buffertoScreen(0, 0, 0);
- 
     }
+
+      if (ch == K_CTRL_N){
+        if (openFileDialog(fileName,fullPath) == 1){
+ 	 filetoBuffer(fileName);
+         flush_editarea(0);
+         buffertoScreen(0, 0,0);
+     }
+        dump_screen(screen1);
+    
+    
+    }
+	     
 
  
   return returnValue;

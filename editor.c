@@ -396,6 +396,7 @@ int endLine=0;
 		      }
 		      tempLine.linea[endLine+i].ch = END_LINE_CHAR;
 		     _hardupdateLINE(&edBuf1, posBufY-1, tempLine);
+               cleanScreenLine(posBufY+2);   
 	       for (j=posBufY; j<=_length(&edBuf1); j++)
 		{
                      _dumpLine(edBuf1, j+1, &tempLine);
@@ -404,8 +405,7 @@ int endLine=0;
 		     cleanScreenLine(j+START_CURSOR_Y+1);   
                      //cleanSection(cursorY, findEndline(tempLine), 2);
 	       }
-               cleanScreenLine(posBufY+1);   
-               cleanScreenLine(posBufY+2);   
+               //cleanScreenLine(posBufY+1);   
 
 	       }
 
