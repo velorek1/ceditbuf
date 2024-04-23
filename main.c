@@ -17,6 +17,7 @@
 #include "ui.h"
 #include "menu.h"
 #include "editor.h"
+#include "opfile.h"
 
 //Prototypes
 void draw_screen();
@@ -162,7 +163,7 @@ wchar_t code_point;
 }
 
 
-int main(){
+int main(int argc, char *argv[]) {
 
 char ch=0;
 char old_ch=0;
@@ -177,7 +178,15 @@ int esc_key = 0;
     //tempLine.linea[0].ch = END_LINE_CHAR;
     //tempLine.linea[posBufX].ch = END_LINE_CHAR;
     //tempLine.linea[posBufX].specialChar = 0;
-    //tempLine.linea[posBufX].attrib = EDIT_FORECOLOR; 
+    //tempLine.linea[posBufX].attrib = EDIT_FORECOLOR;
+    if(argc > 1) {
+     //Does the file exist? Open or create?
+      strcpy(fileName, argv[1]);
+      filetoBuffer(fileName);
+      flush_editarea(0);
+      buffertoScreen(0, 0,0);
+      dump_screen(screen1);
+    } 
     do{    
 	 //end flag from any part of the program
 	 if (programStatus == ENDSIGNAL) break;
@@ -203,10 +212,13 @@ int esc_key = 0;
 	   //try to catch and avoid printing unwanted chars with cursor keys
 	   old_ch = ch;
 	   ch=readch();
-	   if (old_ch==ESC_KEY) esc_key = 1;
-	   if (unwantedChars>0) esc_key = 1;
+	   //if (old_ch==ESC_KEY) esc_key = 1;
+	   //if (unwantedChars>0) esc_key = 1;
 	   //Keys with a escape sequenece
-           if (ch == ESC_KEY) {buffertoScreen(0, 0,FALSE); esc_key = special_keys(); cursor_tick(); ch = 0;}       
+           if (ch == ESC_KEY) {//buffertoScreen(0, 0,FALSE); 
+			       esc_key = special_keys(); 
+			       cursor_tick(); 
+			       ch = 0;}       
            else {
 		//Capture control keys   
 		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)){buffertoScreen(0, 0,FALSE); esc_key= control_keys(ch); ch=0;}   
@@ -357,6 +369,12 @@ int special_keys() {
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       //openFileHandler();    //Open file Dialog
+       if (openFileDialog(fileName,fullPath) == 1){
+ 	 filetoBuffer(fileName);
+         flush_editarea(0);
+         buffertoScreen(0, 0,0);
+     }
+        dump_screen(screen1);
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
       //newDialog(currentFile);   // New file
       //refresh_screen(-1);

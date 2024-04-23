@@ -156,6 +156,7 @@ extern long currentLine; //verticall scroll, pointer to current top line in scro
 extern int vscrollActive; //vertical scroll, vertical scroll is posible
 extern int programStatus; //signal for overall program status
 extern char fileName[MAXFILENAME]; 
+extern char fullPath[MAXFILENAME]; 
 extern int fileModified;
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
 

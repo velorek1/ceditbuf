@@ -14,6 +14,7 @@
 #include "keyb.h"
 #include "global.h"
 #include "editor.h"
+#include "opfile.h"
 /*--------------------------------------------*/
 /* Load current menu into circular linked list*/
 /*--------------------------------------------*/
@@ -22,31 +23,31 @@ void loadmenus(int choice) {
 
   if(choice == HOR_MENU) {
  	if (listBox1 != NULL) removeList(&listBox1);
-	listBox1 = addatend(listBox1, newitem("File", 0, 1));
-	listBox1 = addatend(listBox1, newitem("Options", 7, 1));
-	listBox1 = addatend(listBox1, newitem("Help", 16, 1));
+	listBox1 = addatend(listBox1, newitem("File", 0, 1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Options", 7, 1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Help", 16, 1,-1,-1));
     }
   
 
   if(choice == FILE_MENU) {
  	if (listBox1 != NULL) removeList(&listBox1);
-	listBox1 = addatend(listBox1, newitem("New", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Open", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Quick load", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Save", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Save as...", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Exit", -1, -1));
+	listBox1 = addatend(listBox1, newitem("New", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Open", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Quick load", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Save", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Save as...", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Exit", -1, -1,-1,-1));
  }
   if(choice == OPT_MENU) {
  	if (listBox1 != NULL) removeList(&listBox1);
-	listBox1 = addatend(listBox1, newitem("File Info", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Find...", -1, -1));
-	listBox1 = addatend(listBox1, newitem("Colors", -1, -1));	
+	listBox1 = addatend(listBox1, newitem("File Info", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Find...", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("Colors", -1, -1,-1,-1));	
   }
   if(choice == HELP_MENU) {
  	if (listBox1 != NULL) removeList(&listBox1);
-	listBox1 = addatend(listBox1, newitem("Help...", -1, -1));
-	listBox1 = addatend(listBox1, newitem("About", -1, -1));	
+	listBox1 = addatend(listBox1, newitem("Help...", -1, -1,-1,-1));
+	listBox1 = addatend(listBox1, newitem("About", -1, -1,-1,-1));	
  }
 /*
   if(choice == YESNO_MENU) {
@@ -158,6 +159,17 @@ char filemenu() {
      return DONT_UPDATE;
   }
   
+  if(scrollData.itemIndex == OPTION_2) {
+     //openFile Dialog in opfile.c
+     if (openFileDialog(fileName,fullPath) == 1){
+ 	 filetoBuffer(fileName);
+         flush_editarea(0);
+         buffertoScreen(0, 0,0);
+     }
+
+        dump_screen(screen1);  
+     return DONT_UPDATE;
+  }
   if(scrollData.itemIndex == OPTION_3) {
     //External Module - Open file dialog.
     //openFileHandler();

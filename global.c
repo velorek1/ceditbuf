@@ -52,6 +52,7 @@ int vscrollActive=0; //vertical scroll, vertical scroll is posible
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
 int     programStatus = 0; //signal for overall program Status
 char fileName[MAXFILENAME]; 
+char fullPath[MAXFILENAME]; 
 
 FILE *filePointer;
 int fileModified=FILE_UNMODIFIED;

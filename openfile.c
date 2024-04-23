@@ -1,24 +1,3 @@
-/*====================================================================*/
-/* OPEN FILE MODULE
-   +ListFiles with double linked list and selection menu in C.
-   +Scroll function added.
-   +Integrated with C-EDIT
-   A window is drawn to the buffer and all of the scroll animations
-   are drawn to the terminal on raw mode to have a better scrolling
-   animation. Once the file is selected, the window is closed and the
-   previous screen is painted to the terminal again.
-   Last modified : 11/1/2019 - Switch to readch() instead of getch()
-                   06/04/2019 - Corrected all memory leaks
-		   14/04/2019 - Rename headers
-		   22/04/2020 - Added Set File to Open
-		   23/04/2023 - Merged with Lynx and vastly simplified
-   Coded by Velorek.
-   Target OS: Linux.                                                  */
-/*====================================================================*/
-
-/*====================================================================*/
-/* COMPILER DIRECTIVES AND INCLUDES */
-/*====================================================================*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,19 +8,9 @@
 #include "tm.h"
 #include "keyb.h"
 #include "global.h"
-#include "opfile.h"
 
-
-/*====================================================================*/
-/* GLOBAL VARIABLES */
-/*====================================================================*/
-
-int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
+#define MAX_ITEM_LENGTH 120
 int ndirs=0, nfiles=0;
-
-/*====================================================================*/
-/* CODE */
-/*====================================================================*/
 
 int listFiles(LISTCHOICE ** listBox1, char *directory) {
   DIR    *d;
@@ -132,36 +101,41 @@ void addItems(LISTCHOICE **listBox1)
 	}
 }
 
-int openFileDialog(char fileName[MAXFILENAME], char fullPath[MAXFILENAME]){
+int main(){
 char ch=0;
 char path[MAXFILENAME];
 char bit[MAXFILENAME];
 char ndirstr[100];
-int retvalue=0;
 char nfilestr[100];
 char currentPath[4] = "./\0";
-    retvalue =0;
+int window_y1, window_y2, window_x1,window_x2;
+
+    init_term();
+    initCEDIT();
+    resetch(); 
+    strcpy(path,"\0");
+    strcpy(path, "./");
     setselectorLimit(23);
     window_y1 = (new_rows / 2) - 10;
     window_y2 = (new_rows / 2) + 10;
     window_x1 = (new_columns / 2) - 13;
-    window_x2 = (new_columns / 2) + 13;   
-   copy_screen(screen2,screen1); 
+    window_x2 = (new_columns / 2) + 13;    
    do{
-     draw_window(screen1,window_x1, window_y1, window_x2, window_y2,B_WHITE,F_BLACK,B_CYAN,1,1,1,0);
-     draw_window(screen1,window_x1, window_y2-3, window_x2, window_y2,B_CYAN,F_WHITE,B_BLACK,1,0,0,0);
+     draw_window(screen1,window_x1, window_y1, window_x2, window_y2,B_WHITE,F_BLACK,B_BLUE,1,1,1,0);
+     draw_window(screen1,window_x1, window_y2-3, window_x2, window_y2,B_BLUE,F_WHITE,B_BLACK,1,0,0,0);
      dump_screen(screen1);
       listFiles(&listBox1,currentPath);
       sprintf(ndirstr, "[%d] Directories", ndirs);
       sprintf(nfilestr, "[%d] Files", nfiles);
-      write_str(screen1,window_x1+2,window_y2-2,ndirstr,B_CYAN,FH_WHITE,1);
-      write_str(screen1,window_x1+2,window_y2-1,nfilestr,B_CYAN,F_WHITE,1);
+      write_str(screen1,window_x1+2,window_y2-2,ndirstr,B_BLUE,FH_WHITE,1);
+      write_str(screen1,window_x1+2,window_y2-1,nfilestr,B_BLUE,F_WHITE,1);
       write_str(screen1,window_x1+1,window_y2-4, "   PRESS [ESC] TO EXIT   ",B_BLACK,FH_WHITE,1);
-      write_str(screen1,window_x1+2,window_y1,"Select file...",B_CYAN,FH_WHITE,1);
-      ch = listBox(listBox1, window_x1+3,window_y1+1, &scrollData, B_WHITE, F_BLACK,B_BLUE, FH_WHITE, 15, VERTICAL,1,LOCKED);
+      write_str(screen1,window_x1+2,window_y1,"Select file...",B_BLUE,FH_WHITE,1);
+      ch = listBox(listBox1, window_x1+3,window_y1+1, &scrollData, B_WHITE, F_BLACK,B_CYAN, FH_WHITE, 15, VERTICAL,1,LOCKED);
       
       if (ch == K_ENTER){
 
+	    printf("Char %c\n", scrollData.item[0]);
         if (scrollData.item[0] == '[') {
 	 //directory   
             memset(&path, '\0',sizeof(path)); //Clear memory for temporary line
@@ -173,6 +147,8 @@ char currentPath[4] = "./\0";
 	    strcat(path, "/");
 	    strcat(path, bit);
 	    chdir(path);
+	    //printf("Directory %s:\n",path);
+	    //break;
 	    ch=0;
       }
       else {
@@ -182,22 +158,13 @@ char currentPath[4] = "./\0";
    } while (ch!=ESC_KEY);   
     setselectorLimit(15);
    
-
+    close_term();
+    
+    printf("Key %d:%d\n", ch,K_ENTER);
     if (ch!=27){
-    	    //we pass the values
-            //memset(&fullPath, '\0',sizeof(fullPath)); //Clear memory for temporary line
-            memset(fileName, '\0', strlen(fileName) + 1); // Clear memory for temporary line
-            memset(fullPath, '\0', strlen(fullPath) + 1); // Clear memory for temporary line
-           // memset(&fileName, '\0',sizeof(fileName)); //Clear memory for temporary line
-    	    strcpy(bit,"\0");
-            strcpy(path,"\0");
-            strcpy(fileName, scrollData.item);
-            strcpy(fullPath, path);
-	    retvalue = 1;
+	    printf("File selected: %s\n", scrollData.item);
     }
+	    printf("Directory %s:\n",path);
+	    printf("Directory %s:\n",bit);
     if (listBox1 != NULL) removeList(&listBox1);
-   copy_screen(screen1,screen2); 
-   return retvalue;
 }
-
-

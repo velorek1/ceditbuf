@@ -51,6 +51,7 @@ int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
   do {
 	 if (locked == 0) break;
       keypressed = kbhit(1);
+       if (timerC(&timer2) == TRUE) _animation();
     //Cursor Animation
    if (keypressed == 0){
     
@@ -78,13 +79,11 @@ int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
       break;
       }
      }
-      _animation();
     }
     //Process keys
     if(keypressed == 1) {
       ch = readch();
       keypressed = 0;
-
       //Read special keys
       if (ch==K_ESCAPE) {
                read_keytrail(chartrail);

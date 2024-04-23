@@ -26,6 +26,7 @@
 /* CODE */
 /*====================================================================*/
 int double_escape=0;
+int selectorLimit = 15; //by default selectoLimit is 15 when spaces are added
 int newrows=0, newcolumns=0;
 int listrows=0, listcolumns=0;
 char KTRAIL0[5]={0};
@@ -36,7 +37,7 @@ char KTRAIL1[5]={0};
 /* --------------------- */
 
 // create new list element of type LISTCHOICE from the supplied text string
-LISTCHOICE *newitem(char *text,unsigned setX, unsigned setY) {
+LISTCHOICE *newitem(char *text,unsigned setX, unsigned setY,unsigned foreColor, unsigned backColor) {
   LISTCHOICE *newp;
   newp = (LISTCHOICE *) malloc(sizeof(LISTCHOICE));
   newp->item = (char *)malloc(strlen(text) + 1);
@@ -45,6 +46,9 @@ LISTCHOICE *newitem(char *text,unsigned setX, unsigned setY) {
   newp->back = NULL;
   newp->setX = setX;
   newp->setY = setY;
+  newp->foreColor = foreColor;
+  newp->backColor = backColor;
+ 
   return newp;
 }
 
@@ -177,7 +181,11 @@ void displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
         gotoxy(scrollData->wherex, scrollData->selector);
       else
         gotoxy(aux-> setX, aux -> setY);
-      outputcolor(scrollData->foreColor1, scrollData->backColor1);
+
+      if ((aux->foreColor == -1) || (aux->backColor== -1 )) 	    
+        outputcolor(scrollData->foreColor1, scrollData->backColor1);
+      else
+        outputcolor(aux->foreColor, aux->backColor);
 
       //printf("%s\n", aux->item);
       
@@ -197,6 +205,7 @@ void displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
          gotoxy(scrollData->wherex, scrollData->selector);
        else
          gotoxy(aux -> setX, aux -> setY);
+
        outputcolor(scrollData->foreColor0, scrollData->backColor0);
       //printf("%s\n", aux->item);
       
@@ -461,6 +470,10 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
 	}
 	return ch;
 }
+//method to change how wide the selector is
+void setselectorLimit(int num){
+   selectorLimit = num;
+}
 void resetScrollData(SCROLLDATA *scrollData)
 {
 	scrollData->scrollActive = 0;	//To know whether scroll is active or not.
@@ -468,7 +481,7 @@ void resetScrollData(SCROLLDATA *scrollData)
 	scrollData->listLength = 0;	//Total no. of items in the list
 	scrollData->currentListIndex = 0;	//Pointer to new sublist of items when scrolling.
 	scrollData->displayLimit = 0;	//No. of elements to be displayed.
-	scrollData->selectorLimit = 15;	//No. of chars per item display
+	scrollData->selectorLimit = selectorLimit;	//No. of chars per item display
 	scrollData->scrollDirection = 0;	//To keep track of scrolling Direction.
 	scrollData->selector = 0;	//Y++
 	scrollData->wherex = 0;

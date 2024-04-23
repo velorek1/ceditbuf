@@ -44,6 +44,8 @@ typedef struct _listchoice {
   char   *item;			// Item string
   int setX;		//X,Y position
   int setY;		//-1 to ignore
+  int foreColor;        //-1 to ignore
+  int backColor;        //-1 to ignore
   struct _listchoice *next;	// Pointer to next item
   struct _listchoice *back;	// Pointer to previous item
 } LISTCHOICE;
@@ -84,7 +86,7 @@ extern LISTCHOICE *listBox1;	//Head pointer.
 //DYNAMIC LINKED LIST FUNCTIONS
 void    removeList(LISTCHOICE ** head);
 LISTCHOICE *addatend(LISTCHOICE * head, LISTCHOICE * newp);
-LISTCHOICE *newitem(char *text, unsigned setX, unsigned setY);
+LISTCHOICE *newitem(char *text,unsigned setX, unsigned setY,unsigned foreColor, unsigned backColor);
 
 //LISTBOX FUNCTIONS
 //void    addItems(LISTCHOICE ** listBox1);
@@ -104,6 +106,7 @@ int     move_selector(LISTCHOICE ** head, SCROLLDATA * scrollData);
 char    selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData);
 void    displayItem(LISTCHOICE * aux, SCROLLDATA * scrollData, int select);
 void    resetScrollData(SCROLLDATA *scrollData);
+void 	setselectorLimit(int num);
 
 /*====================================================================*/
 /* FUNCTION PROTOTYPES                                                */
