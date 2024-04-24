@@ -413,9 +413,15 @@ int endLine=0;
 	//}
 	if (posBufY>0) posBufY--;
 	_dumpLine(edBuf1, posBufY,&tempLine);
-	posBufX = findEndline(tempLine)+1;
 	cursorY = cursorY - 1;
-	cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
+	if (findEndline(splitLine) != 0 && findEndline(splitLine) != findEndline(tempLine)){
+        //Find out whether the previous line is empty and place cursor accordingly 
+	  posBufX = findEndline(tempLine)+1;
+	  cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
+	 } else{
+	   cursorX = START_CURSOR_X;
+	   posBufX = cursorX - 1;
+	 }
      }
       //cleanScreenLine(cursorY);
       if(cursorX > START_CURSOR_X){
