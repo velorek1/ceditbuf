@@ -32,7 +32,7 @@ int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
   char    ch;
   NTIMER  cursorTime;
   SCREENCELL *aux = newScreen;
- 
+  resetAnsi(0); 
   init_timer(&cursorTime,150);
   positionx = wherex + strlen(label);
   limitCursor = wherex+strlen(label)+displayLength+1;
@@ -150,6 +150,8 @@ void window(SCREENCELL *screen1, int x1, int y1, int x2, int y2, int backcolor,
   wchar_t ch=0x20;
   i = x1;
   j = y1;
+  
+  resetAnsi(0);
   //shadow
   if (shadow==1){
    for(j = y1 + 1; j <= y2 + 1; j++)
@@ -192,6 +194,7 @@ void window(SCREENCELL *screen1, int x1, int y1, int x2, int y2, int backcolor,
 int inputWindow(char *label, char *tempFile, char *windowTitle,  int offsetX, int offsetY, int length) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     count = 0;
+  resetAnsi(0);
   copy_screen(screen2,screen1);
   window_y1 = (new_rows / 2) - offsetY;
   window_y2 = (new_rows / 2);

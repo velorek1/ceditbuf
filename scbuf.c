@@ -164,6 +164,7 @@ void copy_screen(SCREENCELL *destination,SCREENCELL *source){
 /*------------------------------------------*/
 void update_ch(int x, int y, wchar_t ch, char backcolor, char forecolor) {
 //Write Unicode char to screen raw
+   resetAnsi(0);
    gotoxy(x+1, y+1);
    outputcolor(forecolor, backcolor);
    printf("%lc", ch);  //unicode
@@ -174,6 +175,7 @@ void write_ch(SCREENCELL *newScreen, int x, int y, wchar_t ch, char backcolor, c
   int     i, pos;
 
   SCREENCELL *aux = newScreen;
+  resetAnsi(0);
   if (aux != NULL && buffersize <= length(&aux)){
 
     pos = (y - 1) * sc_columns + x;   //This is the formula to calculate the position index in the screen buffer
@@ -278,6 +280,7 @@ void update_str(int x, int y, char *str, char backcolor, char forecolor) {
   size_t     i=0;
   int wherex=0;
 
+    resetAnsi(0);
     wherex = x;
     astr = str;
     for(i = 0; i <= strlen(str) - 1; i++) {
@@ -309,7 +312,7 @@ void screen_color(SCREENCELL *newScreen, char bcolor, char fcolor, wchar_t ch) {
 /* Changes the color of all the cells to create the effect of changing color in the background */
   int     i=0;
   SCREENCELL *aux=newScreen;
-  
+  resetAnsi(0);
   //screen should be updated twice to get round the last row glitch
   if (aux != NULL && buffersize <= length(&aux)){ 
    for(i = 0; i < buffersize; i++) {

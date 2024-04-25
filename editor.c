@@ -374,6 +374,7 @@ int endLine=0;
  	//if (posBufY >= _length(&edBuf1)-1) _deleteObject(&edBuf1, posBufY, FALSE); //remove line from buffer
         //else { 
               memset(&tempLine, '\0',sizeof(tempLine));
+              memset(&splitLine, '\0',sizeof(splitLine));
               _dumpLine(edBuf1, posBufY-1, &tempLine);
 	      if (findEndline(tempLine) < 1){
 
@@ -414,17 +415,25 @@ int endLine=0;
 	if (posBufY>0) posBufY--;
 	_dumpLine(edBuf1, posBufY,&tempLine);
 	cursorY = cursorY - 1;
+	//write_num(screen1,1,1,endLine,B_RED,F_WHITE,1);
+	//write_num(screen1,15,1,findEndline(splitLine),B_RED,F_WHITE,1);
+	//write_num(screen1,30,1,findEndline(tempLine),B_RED,F_WHITE,1);
 	if (findEndline(splitLine) != 0 && findEndline(splitLine) != findEndline(tempLine)){
         //Find out whether the previous line is empty and place cursor accordingly 
 	  posBufX = findEndline(tempLine)+1;
 	  cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
 	 } else{
-	   cursorX = START_CURSOR_X;
-	   posBufX = cursorX - 1;
+             if (endLine != findEndline(tempLine)){
+	       cursorX = START_CURSOR_X;
+	       posBufX = cursorX - 1;
+	     }else{
+	       posBufX = findEndline(tempLine)+1;
+	       cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
+	     }
 	 }
      }
       //cleanScreenLine(cursorY);
-      if(cursorX > START_CURSOR_X){
+      if(cursorX > START_CURSOR_X){     
         cursorX = cursorX - 1;
         posBufX--;
         _updateLine(edBuf1, posBufY, &tempLine);    
@@ -434,6 +443,10 @@ int endLine=0;
       cleanSection(cursorY, findEndline(tempLine), 2);
       linetoScreenRAW(cursorY,tempLine);
      // cleanScreenLine(_length(&edBuf1)-1);   
+        //close_term();
+	//printf("%d:%d:%d", findEndline(splitLine), findEndline(tempLine), endLine);
+	//exit(0);
+
     } 
 
     if(ch == K_TAB) {

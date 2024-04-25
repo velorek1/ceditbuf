@@ -138,8 +138,8 @@ char filemenu() {
   loadmenus(FILE_MENU);
   draw_window(screen1,0, 2, 13, 9, MENU_PANEL, MENU_FOREGROUND0,0, 1,0,1,1);
   ch = listBox(listBox1, 3, 3 , &scrollData, MENU_PANEL, MENU_FOREGROUND0,  MENU_SELECTOR, MENU_FOREGROUND1,  -1, VERTICALWITHBREAK,0,1); 
-     copy_screen(screen1,screen2);
-     dump_screen(screen1);
+    // copy_screen(screen1,screen2);
+    // dump_screen(screen1);
       
   //return if right and left arrow keys are pressed
   if (ch == K_RIGHTMENU || ch == K_LEFTMENU) return ch;
@@ -161,6 +161,8 @@ char filemenu() {
   
   if(scrollData.itemIndex == OPTION_2) {
      //openFile Dialog in opfile.c
+    flush_editarea(0);
+    buffertoScreen(0, 0,0);
      if (openFileDialog(fileName,fullPath) == 1){
  	 filetoBuffer(fileName);
          flush_editarea(0);
