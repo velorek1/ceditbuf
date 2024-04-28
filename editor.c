@@ -601,7 +601,7 @@ int i;
   write_ch(screen1, 2, old_rows - 1, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,0);
   write_ch(screen1, 1, old_rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   write_ch(screen1, old_columns - 2, old_rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
-
+  if (strlen(fileName) == 0) strcpy(fileName,"UNTITLED");
   write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
         MENU_PANEL, MENU_FOREGROUND0,0);
  if (force_update) dump_screen(screen1);

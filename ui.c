@@ -134,6 +134,7 @@ int textbox(SCREENCELL *newScreen,int wherex, int wherey, int displayLength,
        textcolor,raw);
  
   //resetch();
+  if (ch == K_ESCAPE) charCount = 0;
   return charCount;
 }
 

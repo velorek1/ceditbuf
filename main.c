@@ -26,6 +26,8 @@ int special_keys();
 int control_keys(char ch);
 void _resizeScreen();
 wchar_t currentChar = 0;
+char tempMessage[150];
+int displayMessage(char *temporaryMessage, int x, int y, int fColor, int bColor, int timeDuration);
 
 void draw_screen(){
 //BASE SCREEN IS STORED IN SCREEN 2
@@ -89,7 +91,7 @@ void draw_screen(){
   write_ch(screen1, 2, old_rows - 1, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,0);
   write_ch(screen1, 1, old_rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   write_ch(screen1, old_columns - 2, old_rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
-  strcpy(fileName, "UNTITLED");
+  if (strlen(fileName) == 0) strcpy(fileName, "UNTITLED");
   write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
         MENU_PANEL, MENU_FOREGROUND0,0); 
 
@@ -175,6 +177,7 @@ int esc_key = 0;
     initCEDIT();
     draw_screen();
     resetch();
+    strcpy(fileName, "\0");
     //tempLine.linea[0].ch = END_LINE_CHAR;
     //tempLine.linea[posBufX].ch = END_LINE_CHAR;
     //tempLine.linea[posBufX].specialChar = 0;
@@ -190,8 +193,11 @@ int esc_key = 0;
     do{    
 	 //end flag from any part of the program
 	 if (programStatus == ENDSIGNAL) break;
-	 //Time animation & resize window
-	  if (timerC(&timer2) == TRUE){
+	 //Time animation & resize window 
+	  if (timerC(&timer3) == TRUE){
+		   displayMessage(tempMessage,  (new_columns/2)-strlen(tempMessage)/2, 1, FH_WHITE, B_RED, 5);
+	  }
+	 if (timerC(&timer2) == TRUE){
            _animation();
 	    //Refresh screen size buffers if terminal dimension changes
 	    if (new_rows != old_rows || new_columns != old_columns)
@@ -237,6 +243,7 @@ int esc_key = 0;
      return 0;
 }
 
+
 //CONTROL KEYS
 int control_keys(char ch){
   char    returnMenuChar=0;
@@ -252,8 +259,8 @@ int control_keys(char ch){
       returnValue  = ENDSIGNAL;
     }
     if (ch == K_CTRL_A) {
-       flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      flush_editarea(0);
+       buffertoScreen(0, 0,0);
       countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
@@ -395,23 +402,25 @@ int special_keys() {
       //refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_S) == 0) {
       //Save file
-         flush_editarea(0);
+      flush_editarea(0);
       buffertoScreen(0, 0,0);
- 
-    	    if (strcmp(fileName, "UNTITLED") == 0) {
+      strcpy(tempMessage, "[File saved!]\0");
+    	   if (strcmp(fileName, "UNTITLED") == 0) {
         countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
         if (countCh>0) {
 	   strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
 	   flush_editarea(0);
 	   buffertoScreen(0, 0,0);
-          dump_screen(screen1);
+           dump_screen(screen1);
+           timer3.ticks=0; 
 	}	
        } else{
 	   buffertoFile(fileName);
 	   flush_editarea(0);
 	   buffertoScreen(0, 0,0);
-          dump_screen(screen1);
+           dump_screen(screen1);
+           timer3.ticks=0; 
        }
     } else if(strcmp(chartrail, K_ALT_W) == 0) {
       //if(strcmp(currentFile, UNKNOWN) == 0)
@@ -465,7 +474,7 @@ void credits() {
   //Frees memory and displays goodbye message 
   //Free selected path item/path from opfiledialog 
   size_t i; //to be compatible with strlen
-  char auth[27] ="Coded by v3l0r3k 2019-2024";  
+  char auth[27] ="Coded by v3l0r3k 2018-2024";  
   //free_buffer();
   //free memory
   if (screen1 != NULL) deleteList(&screen1);
@@ -521,4 +530,19 @@ void _resizeScreen(){
         buffertoScreen(0, 0,0);
         dump_screen(screen1);
 
+}
+
+int displayMessage(char *temporaryMessage, int x, int y, int fColor, int bColor, int timeDuration){
+//display a temporary nessage controlled by Timer3
+   if (timer3.ticks == -1) {
+           write_str(screen1, x,y, temporaryMessage, B_WHITE, F_WHITE,1);
+	   return 0;
+   }
+  if (timer3.ticks  >= timeDuration) {
+	  stop_timer(&timer3); 
+          write_str(screen1, x,y, temporaryMessage, B_WHITE, F_WHITE,1);
+	  return 0;
+  } 
+   write_str(screen1, x,y, temporaryMessage, bColor, fColor,1);
+   return 1;
 }

@@ -9,6 +9,7 @@ SCREENCELL *screen2=NULL;
 SCREENCELL *screen3=NULL;
 NTIMER cursor_timer1;
 NTIMER timer2;
+NTIMER timer3;
 //NTIMER timer3;
 SCROLLDATA scrollData;
 VLINES *edBuf1=NULL; //Buffer vector of lines(1022 chars)
@@ -62,7 +63,9 @@ int initCEDIT(){
    //Init timer
    init_timer(&cursor_timer1,TIMER_SPEED);
    init_timer(&timer2,TIMER_SPEED2);
+   init_timer(&timer3,TIMER_SPEED3);
    timer2.ticks=0;
+   timer3.ticks=-1;
    cursor_timer1.ticks=0;
    //Init Text buffer
    VLINES tempLine = {0};

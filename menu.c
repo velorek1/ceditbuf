@@ -114,6 +114,7 @@ void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
 char horizontal_menu() {
 char ch=0;
 
+         dump_screen(screen1);
          //Save current screen to screen2
          loadmenus(HOR_MENU);	
 	//load menus from ui.c onto lisBox in (global.c)

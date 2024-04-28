@@ -13,6 +13,7 @@
 
 #define TIMER_SPEED 100 //animation
 #define TIMER_SPEED2 30 //cursor
+#define TIMER_SPEED3 100 //temporary messages
 #define END_LINE_CHAR 0x0A
 #define FILL_CHAR 0x20
 #define ENDSIGNAL -1
@@ -28,6 +29,7 @@ extern SCREENCELL *screen1;
 extern SCREENCELL *screen2;
 extern NTIMER cursor_timer1;
 extern NTIMER timer2;
+extern NTIMER timer3;
 extern size_t animation;
 extern int centerX;
 //extern LISTCHOICE listBox1;
