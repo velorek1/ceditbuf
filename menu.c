@@ -147,13 +147,13 @@ char filemenu() {
 
   if(scrollData.itemIndex == OPTION_1) {
     flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
       countCh=inputWindow("File:", tempfileName,  "[+] New file",34,2,60);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
          flush_editarea(0);
-         buffertoScreen(0, 0,0);
+         buffertoScreen(0);
         dump_screen(screen1);
      }//buffertoScreen(0, 0, 0);
       ch=0;
@@ -163,11 +163,11 @@ char filemenu() {
   if(scrollData.itemIndex == OPTION_2) {
      //openFile Dialog in opfile.c
     flush_editarea(0);
-    buffertoScreen(0, 0,0);
+    buffertoScreen(0);
      if (openFileDialog(fileName,fullPath) == 1){
  	 filetoBuffer(fileName);
          flush_editarea(0);
-         buffertoScreen(0, 0,0);
+         buffertoScreen(0);
      }
 
         dump_screen(screen1);  
@@ -178,13 +178,13 @@ char filemenu() {
     //openFileHandler();
       
       flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
       countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
          flush_editarea(0);
-         buffertoScreen(0, 0,0);
+         buffertoScreen(0);
         dump_screen(screen1);
      }//buffertoScreen(0, 0, 0);
      return DONT_UPDATE;
@@ -193,7 +193,7 @@ char filemenu() {
   if(scrollData.itemIndex == OPTION_4) {
        //Save file
        flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
     	
 	if (strcmp(fileName, "UNTITLED") == 0) {
         countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
@@ -201,13 +201,13 @@ char filemenu() {
 	  strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
 	   flush_editarea(0);
-	   buffertoScreen(0, 0,0);
+	   buffertoScreen(0);
           dump_screen(screen1);
 	}	
        } else{
 	   buffertoFile(fileName);
 	   flush_editarea(0);
-	   buffertoScreen(0, 0,0);
+	   buffertoScreen(0);
           dump_screen(screen1);
        }
 
@@ -217,13 +217,13 @@ char filemenu() {
   if(scrollData.itemIndex == OPTION_5) {
     //Save as option
        flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
   
     countCh=inputWindow("File:", fileName,  "Save file as...",28,2,48);
     if (countCh>0) {
       buffertoFile(fileName);
       flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
       dump_screen(screen1);
     }
     return DONT_UPDATE;

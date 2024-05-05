@@ -40,7 +40,6 @@ void linetoScreenRAW(long whereY, VLINES tempLine){
 //dump temporary Line to screen buffer - RAW MODE
    int i=0;
    int attrib = EDIT_FORECOLOR;
-
    for (i=0; i<findEndline(tempLine); i++){
 	   attrib = tempLine.linea[i].attrib;  
          //don't print beyond display!
@@ -114,18 +113,21 @@ void cleanSection(long whereY, long start, int amount)
 
 
 
-void buffertoScreen(long startPoint, long activeline, BOOL raw){
+void buffertoScreen(BOOL raw){
    long j=0;
-   for (j=startPoint; j<_length(&edBuf1); j++){
-	  _dumpLine(edBuf1, j , &tempLine);
+   if (raw == 0) flush_editarea(0);
+   for (j=0; j<vdisplayArea; j++){
+	  _dumpLine(edBuf1, j+currentLine , &tempLine);
  	  if (raw==TRUE){ 
+	      cleanScreenLine(j+START_CURSOR_Y);
 	      linetoScreenRAW(j+START_CURSOR_Y, tempLine);
 	  }else{ 
+	      //cleanScreenLine(j+START_CURSOR_Y);
               linetoScreen(j+START_CURSOR_Y, tempLine);
 	  }
-
 	}
-    _dumpLine(edBuf1, activeline, &tempLine);
+
+    //_dumpLine(edBuf1, activeline, &tempLine);
     resetAnsi(0);
 }
 
@@ -340,14 +342,21 @@ int endLine=0;
 	   _updateLine(edBuf1, posBufY+1, &splitLine);
 	   //cleanScreenLine(cursorY-1);
            cleanSection(cursorY-1,0,findEndline(tempLine));
-           buffertoScreen(posBufY, posBufY+1,TRUE);
+           buffertoScreen(TRUE);
 	          
       } 
       //}
+     //scroll if needed
+	        if (_length(&edBuf1) > vdisplayArea ) {
+		  currentLine++;
+	          buffertoScreen(1);
+		}
+
       //Move buffer pointer positions
       posBufY = posBufY + 1;
       posBufX = 0;
-     }
+ 
+    }
       //fileModified = FILE_MODIFIED;
       
    if(ch == K_BACKSPACE) {

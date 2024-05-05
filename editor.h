@@ -22,7 +22,7 @@ void linetoScreen(long whereY, VLINES tempLine);
 void linetoScreenRAW(long whereY, VLINES tempLine);
 void cleanScreenLine(long whereY);
 void cleanSection(long whereY, long start, int amount);
-void buffertoScreen(long startPoint, long activeline, BOOL raw);
+void buffertoScreen(BOOL raw);
 int editor_section(char ch);
 wchar_t convertChar(char c1, char c2);
 //int filetoBuffer(FILE * filePtr);

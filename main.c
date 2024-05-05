@@ -159,7 +159,7 @@ wchar_t code_point;
    //Buffer pointer position
     update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 10, new_rows, posBufX, STATUSBAR, STATUSMSG,1);
-    write_num(screen1, new_columns - 20, new_rows, posBufY, STATUSBAR, STATUSMSG,1);
+    write_num(screen1, new_columns - 20, new_rows, posBufY+1, STATUSBAR, STATUSMSG,1);
     update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
 }
@@ -187,7 +187,7 @@ int esc_key = 0;
       strcpy(fileName, argv[1]);
       filetoBuffer(fileName);
       flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
       dump_screen(screen1);
     } 
     do{    
@@ -227,7 +227,7 @@ int esc_key = 0;
 			       ch = 0;}       
            else {
 		//Capture control keys   
-		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)){buffertoScreen(0, 0,FALSE); esc_key= control_keys(ch); ch=0;}   
+		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)){buffertoScreen(FALSE); esc_key= control_keys(ch); ch=0;}   
 		else 
 	         //Process raw edit input from keyboard in editor.c		
 		{
@@ -260,13 +260,13 @@ int control_keys(char ch){
     }
     if (ch == K_CTRL_A) {
       flush_editarea(0);
-       buffertoScreen(0, 0,0);
+       buffertoScreen(0);
       countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
          flush_editarea(0);
-         buffertoScreen(0, 0,0);
+         buffertoScreen(0);
         dump_screen(screen1);
      }//buffertoScreen(0, 0, 0);
     }
@@ -275,7 +275,7 @@ int control_keys(char ch){
         if (openFileDialog(fileName,fullPath) == 1){
  	 filetoBuffer(fileName);
          flush_editarea(0);
-         buffertoScreen(0, 0,0);
+         buffertoScreen(0);
      }
         dump_screen(screen1);
     
@@ -352,6 +352,12 @@ int special_keys() {
       if(cursorY > 2) {
        cursorY = cursorY - 1;
         
+      }else{
+	      //scrolling up
+	        if (currentLine>0) {
+			currentLine--;
+	               buffertoScreen(1);
+		}
       }
       if (posBufY > 0) posBufY--;
  
@@ -362,8 +368,15 @@ int special_keys() {
       if (posBufY<_length(&edBuf1)-1){
         if(cursorY < new_rows - 3) {
           //stay put if we are are the end of the viewing area
-          cursorY = cursorY + 1;  
+          cursorY = cursorY + 1;
         }
+	else{  
+                //scrolling down
+	        if (_length(&edBuf1) > vdisplayArea ) {
+		  currentLine++;
+	          buffertoScreen(1);
+		}
+	}  
         posBufY++;
       }
     } else if(strcmp(chartrail, K_PAGEDOWN_TRAIL) == 0) {
@@ -390,7 +403,7 @@ int special_keys() {
        if (openFileDialog(fileName,fullPath) == 1){
  	 filetoBuffer(fileName);
          flush_editarea(0);
-         buffertoScreen(0, 0,0);
+         buffertoScreen(0);
      }
         dump_screen(screen1);
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
@@ -403,7 +416,7 @@ int special_keys() {
     } else if(strcmp(chartrail, K_ALT_S) == 0) {
       //Save file
       flush_editarea(0);
-      buffertoScreen(0, 0,0);
+      buffertoScreen(0);
       strcpy(tempMessage, "[File saved!]\0");
     	   if (strcmp(fileName, "UNTITLED") == 0) {
         countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
@@ -411,14 +424,14 @@ int special_keys() {
 	   strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
 	   flush_editarea(0);
-	   buffertoScreen(0, 0,0);
+	   buffertoScreen(0);
            dump_screen(screen1);
            timer3.ticks=0; 
 	}	
        } else{
 	   buffertoFile(fileName);
 	   flush_editarea(0);
-	   buffertoScreen(0, 0,0);
+	   buffertoScreen(0);
            dump_screen(screen1);
            timer3.ticks=0; 
        }
@@ -527,8 +540,9 @@ void _resizeScreen(){
 	create_screen(&screen1);
 	draw_screen();
 	flush_editarea(0);
-        buffertoScreen(0, 0,0);
-        dump_screen(screen1);
+	vdisplayArea = new_rows - 4;
+        //buffertoScreen(0, 0,0);
+        //dump_screen(screen1);
 
 }
 
