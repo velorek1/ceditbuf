@@ -146,7 +146,9 @@ char currentPath[4] = "./\0";
     window_y2 = (new_rows / 2) + 10;
     window_x1 = (new_columns / 2) - 13;
     window_x2 = (new_columns / 2) + 13;   
-   copy_screen(screen2,screen1); 
+   copy_screen(screen2,screen1);
+   old_rows = new_rows;
+   old_columns = new_columns; 
    do{
      draw_window(screen1,window_x1, window_y1, window_x2, window_y2,B_WHITE,F_BLACK,B_BLACK,1,1,1,0);
      draw_window(screen1,window_x1, window_y2-3, window_x2, window_y2,B_CYAN,F_WHITE,B_BLACK,1,0,0,0);
@@ -159,7 +161,8 @@ char currentPath[4] = "./\0";
       write_str(screen1,window_x1+1,window_y2-4, "   PRESS [ESC] TO EXIT   ",B_BLACK,FH_WHITE,1);
       write_str(screen1,window_x1+2,window_y1,"Select file...",B_BLACK,FH_WHITE,1);
       ch = listBox(listBox1, window_x1+3,window_y1+1, &scrollData, B_WHITE, F_BLACK,B_BLUE, FH_WHITE, 15, VERTICAL,1,LOCKED);
-      
+      if (_animation() == -1) {ch=K_ESCAPE; break;} 
+      if (ch == 0x27) {break;} 
       if (ch == K_ENTER){
 
         if (scrollData.item[0] == '[') {
@@ -199,5 +202,6 @@ char currentPath[4] = "./\0";
    copy_screen(screen1,screen2); 
    return retvalue;
 }
+
 
 

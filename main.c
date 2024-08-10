@@ -218,7 +218,7 @@ int esc_key = 0;
 	   //try to catch and avoid printing unwanted chars with cursor keys
 	   old_ch = ch;
 	   ch=readch();
-	   //if (old_ch==ESC_KEY) esc_key = 1;
+	   if (old_ch==ESC_KEY) esc_key = 1;
 	   //if (unwantedChars>0) esc_key = 1;
 	   //Keys with a escape sequenece
            if (ch == ESC_KEY) {//buffertoScreen(0, 0,FALSE); 

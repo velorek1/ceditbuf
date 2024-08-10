@@ -109,6 +109,12 @@ int _animation(){
     //update only the screen bits that change
     if(timer2.ticks > 6)
       timer2.ticks = 0;
-    return 0;
+    //return a signal if screen size changes
+     if (new_rows != old_rows || new_columns != old_columns)
+		return -1;
+	else
+		return 0;
+   
+    
 
 }

@@ -559,11 +559,14 @@ if (locked == LOCKED) {
 	if (double_escape == 1) {
 	  scrollData->itemIndex = -1;
 	  locked = FALSE;
+	  ch= K_ESCAPE;
 	  break;
 	}
 	if (_animation() == -1) {
 	  scrollData->itemIndex = -1;
 	  double_escape = 1;
+	  ch = K_ESCAPE;
+	  locked = FALSE;
 	   break;
 	}   
     } while(ch != K_ENTER);
@@ -577,6 +580,13 @@ if (locked == LOCKED) {
     scrollData->displayLimit = list_length;	//Default to list_length
     loadlist(head, scrollData, 0);
      ch = selectorMenu(head, scrollData);
+	if (double_escape == 1) {
+	  scrollData->itemIndex = -1;
+	  locked = FALSE;
+	  ch= K_ESCAPE;
+	  //break;
+	}
+
   }
 }
   return ch;
