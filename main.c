@@ -106,9 +106,8 @@ char drawChar=FILL_CHAR;
 char drawChar0=FILL_CHAR;
 int attrib = 0;
 wchar_t code_point;
-    
     //GET CHAR BEING POINTED AT FROM EDIT BUFFER
-    if (edBuf1 != NULL)_dumpLine(edBuf1, posBufY, &tempLine);
+   if (edBuf1 != NULL)_dumpLine(edBuf1, posBufY, &tempLine);
     drawChar = tempLine.linea[posBufX].ch; 
     drawChar0 = tempLine.linea[posBufX].specialChar; 
     attrib =  tempLine.linea[posBufX].attrib;
@@ -170,8 +169,8 @@ int main(int argc, char *argv[]) {
 
 char ch=0;
 char old_ch=0;
-int keypressed = 0;
 int esc_key = 0;
+int keypressed = 0;
 
     //Init Terminal
     init_term();
@@ -210,7 +209,7 @@ int esc_key = 0;
 	 if (timerC(&cursor_timer1) == TRUE){
 	      //Animation
              cursor_tick();
-	     if (keypressed == FALSE) { esc_key = 0; unwantedChars =0;}
+	     //if (keypressed == FALSE) { esc_key = 0;}
            }
 	//PROCESS INPUT
     	 keypressed = kbhit(1);
@@ -219,8 +218,10 @@ int esc_key = 0;
 	   //try to catch and avoid printing unwanted chars with cursor keys
 	   old_ch = ch;
 	   ch=readch();
-	   if (old_ch==ESC_KEY) esc_key = 1;
-	   //if (unwantedChars>0) esc_key = 1;
+	   if (old_ch==ESC_KEY) {unwantedChars = 1; esc_key = 1;}
+	   if (ch==ESC_KEY) {unwantedChars = 1; esc_key = 1;}
+	   if (unwantedChars>0) esc_key = 1;
+
 	   //Keys with a escape sequenece
            if (ch == ESC_KEY) {//buffertoScreen(0, 0,FALSE); 
 			       esc_key = special_keys(); 
@@ -236,8 +237,10 @@ int esc_key = 0;
 		  if (ch != 0 && esc_key==0 && unwantedChars == 0) editor_section(ch);
 	        }
 	   }
-        }	   
-	//Check for ESC-related keys
+        }else{
+	//if not keypressed reset values for unwanted characters
+             esc_key=0; unwantedChars = 0;
+	}//Check for ESC-related keys
       } while (esc_key != ENDSIGNAL);     
     //restore terminal
      credits();    
