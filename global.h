@@ -140,6 +140,7 @@ extern int cursorX, cursorY; //position on screen X:[0, columns -2] Y:[0, rows-3
 extern int old_cursorX, old_cursorY;
 extern long posBufX, posBufY; //position in the edit buffer X:[0,1022] Y:[0,13000]
 extern long oldposBufX, oldposBufY; //position in the edit buffer X:[0,1022] Y:[0,13000]
+extern long shiftH; //for horizontal scroll
 extern int unwantedChars;
 int _animation();
 int initCEDIT(); 

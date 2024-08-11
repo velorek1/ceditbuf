@@ -41,18 +41,18 @@ void linetoScreenRAW(long whereY, VLINES tempLine){
    int i=0;
    int attrib = EDIT_FORECOLOR;
    for (i=0; i<findEndline(tempLine); i++){
-	   attrib = tempLine.linea[i].attrib;  
+	   attrib = tempLine.linea[i+shiftH].attrib;  
          //don't print beyond display!
 	 if (i+START_CURSOR_X < new_columns-1){
-	  if(tempLine.linea[i].specialChar != 0) {
+	  if(tempLine.linea[i].specialChar!= 0) {
 	    //Special char ? print the two values to screen buffer.
             gotoxy(i+START_CURSOR_X+1, whereY+1);
             outputcolor(attrib, EDITAREACOL);
-            printf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
+            printf("%c%c", tempLine.linea[i+shiftH].specialChar,tempLine.linea[i+shiftH].ch);
 	  } else {
 	    gotoxy(i+START_CURSOR_X+1, whereY+1);
             outputcolor(attrib, EDITAREACOL);
-            printf("%c", tempLine.linea[i].ch);
+            printf("%c", tempLine.linea[i+shiftH].ch);
   	  }
        }
    }
@@ -70,13 +70,13 @@ void linetoScreen(long whereY, VLINES tempLine){
 	  if(tempLine.linea[i].specialChar != 0) {
 	    //Special char ? print the two values to screen buffer.
             //write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
-            temp = convertChar(tempLine.linea[i].specialChar, tempLine.linea[i].ch);         // Second char
+            temp = convertChar(tempLine.linea[i+shiftH].specialChar, tempLine.linea[i].ch);         // Second char
             write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
 	    
             //rintf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
 	  } else {
             //write_ch(screen1,i+START_CURSOR_X, whereY+1,tempLine.linea[i].ch,attrib,EDITAREACOL,0);
-            temp = tempLine.linea[i].ch;
+            temp = tempLine.linea[i+shiftH].ch;
             write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
             //printf("%c", tempLine.linea[i].ch);
   	  }
@@ -176,6 +176,7 @@ int endLine=0;
        // if (fileModified != FILE_READMODE) {
      //Process normal printable chars first
      if (ch == 27) return 0;
+
      if ((ch > 31 && ch < 127) || ch < 0) {
 	if (ch < 0) {
 	    read_accent(&newch, accentchar);

@@ -342,12 +342,16 @@ int special_keys() {
         //editScroll.bufferX--;
       }
       if (posBufX>0) posBufX--;
+      if (cursorX == 1 && shiftH>0) {shiftH--; buffertoScreen(1);}
     } else if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
       //Right-arrow key
       unwantedChars++;
       if(cursorX < new_columns - 2){
         cursorX = cursorX + 1;
-        //editScroll.bufferX++;
+        //shiftH = 0;
+      } else{
+	shiftH++;
+	buffertoScreen(1);      
       }
       posBufX++;
     } else if(strcmp(chartrail, K_UP_TRAIL) == 0) {
