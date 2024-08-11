@@ -40,7 +40,7 @@ void draw_screen(){
      create_screen(&screen1);
      create_screen(&screen2);
      //SCREEN 2
-     screen_color(screen1, EDITAREACOL, EDITAREACOL, FILL_CHAR);
+     screen_color(screen1, EDITAREACOL, EDIT_FORECOLOR, FILL_CHAR);
     //Failsafe just in case it can't find the terminal dimensions
     if(old_rows == 0)
       old_rows = ROWS_FAILSAFE;
@@ -127,18 +127,19 @@ wchar_t code_point;
 
     //CLEAR LAST POSITION OF CURSOR WITH FILL_CHAR OR GO BACK TO PREVIOUS CHAR
     if ((old_cursorX != cursorX) || (old_cursorY != cursorY)){
-	//drawChar = FILL_CHAR; 	
       //old?
       if (edBuf1 != NULL)_dumpLine(edBuf1, oldposBufY, &tempLine);
-      drawChar = tempLine.linea[oldposBufX].ch; 
-      drawChar0 = tempLine.linea[oldposBufX].specialChar; 
-      attrib =  tempLine.linea[oldposBufX].attrib;
+           drawChar = tempLine.linea[oldposBufX].ch; 
+           drawChar0 = tempLine.linea[oldposBufX].specialChar; 
+           attrib =  tempLine.linea[oldposBufX].attrib;
+    //always clear cursor cell (avoids false misprints)
+    update_ch(old_cursorX, old_cursorY, ' ', EDITAREACOL, EDIT_FORECOLOR);
+    //then try to update to its previous state
     if (drawChar0 != 0 && drawChar != '\0') code_point = ((drawChar0 & 0x1F) << 6) | (drawChar & 0x3F);
     else {
             if (drawChar == 0 || drawChar == END_LINE_CHAR) drawChar = FILL_CHAR;
 	    code_point = drawChar;
     }
- 
        update_ch(old_cursorX, old_cursorY, code_point, EDITAREACOL, attrib);
     } 
     if (old_cursorY != cursorY) {
@@ -541,9 +542,14 @@ void _resizeScreen(){
 	draw_screen();
 	flush_editarea(0);
 	vdisplayArea = new_rows - 4;
-        //buffertoScreen(0, 0,0);
-        //dump_screen(screen1);
-
+	//if screen resizes file pointers are rewound to the beginning
+        currentLine = 0;
+	posBufX = 0;
+	posBufY = 0;
+	buffertoScreen(0);
+        dump_screen(screen1);
+	cursorX = START_CURSOR_X;
+	cursorY = START_CURSOR_Y;
 }
 
 int displayMessage(char *temporaryMessage, int x, int y, int fColor, int bColor, int timeDuration){
