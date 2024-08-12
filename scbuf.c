@@ -443,7 +443,8 @@ void draw_window(SCREENCELL *newScreen, int x1, int y1, int x2, int y2, int back
     for(i = x1 + 1; i <= x2 + 1; i++)
     {
       ch=read_char(aux, i,j); //dynamic shadow
-      if ((ch=='\0') || (ch == UNICODEBAR1)) ch=FILL_CHAR;
+      if ((ch=='\0') || (ch == UNICODEBAR1) || (ch<0)) ch=FILL_CHAR;
+      //ch=FILL_CHAR;
       //if (ch<0) ch = (tempLine.linea[i].specialChar << 8) | tempLine.linea[i].ch;
       write_ch(aux, i, j, ch, B_BLACK, F_WHITE,raw);
     }

@@ -64,26 +64,29 @@ void linetoScreen(long whereY, VLINES tempLine){
    int attrib = EDIT_FORECOLOR;
    wchar_t temp='0';
    for (i=0; i<findEndline(tempLine); i++){
-	   attrib = tempLine.linea[i].attrib;  
+	   attrib = tempLine.linea[i+shiftH].attrib;  
          //don't print beyond display!
 	 if (i+START_CURSOR_X < new_columns-1){
 	  if(tempLine.linea[i].specialChar != 0) {
 	    //Special char ? print the two values to screen buffer.
             //write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
-            temp = convertChar(tempLine.linea[i+shiftH].specialChar, tempLine.linea[i].ch);         // Second char
+            temp = convertChar(tempLine.linea[i+shiftH].specialChar, tempLine.linea[i+shiftH].ch);         // Second char
+            //if (temp<1 ) {temp = FILL_CHAR; attrib =F_BLUE;}
+            if ((temp<1 || temp =='\0' || temp==END_LINE_CHAR)) {temp = FILL_CHAR; attrib =F_BLUE;}
             write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
 	    
             //rintf("%c%c", tempLine.linea[i].specialChar,tempLine.linea[i].ch);
 	  } else {
             //write_ch(screen1,i+START_CURSOR_X, whereY+1,tempLine.linea[i].ch,attrib,EDITAREACOL,0);
             temp = tempLine.linea[i+shiftH].ch;
+            //if (temp<1 ) temp = FILL_CHAR; 
+            if ((temp<1 || temp =='\0' || temp==END_LINE_CHAR)) {temp = FILL_CHAR; attrib =F_BLUE;}
             write_ch(screen1,i+START_CURSOR_X, whereY+1,temp,attrib,EDITAREACOL,0);
             //printf("%c", tempLine.linea[i].ch);
   	  }
        }
    }
 
-  // dump_screen(screen1);
 }
 
 
