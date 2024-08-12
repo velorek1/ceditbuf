@@ -185,6 +185,7 @@ int endLine=0;
 	    read_accent(&newch, accentchar);
 	    newch = accentchar[1];
       }
+      //if ((posBufX != endLine) && (shiftH>0)) return 0;
       //check if we are at the limit of our display to print chars
       if (cursorX < new_columns-2) cursorX++;
       if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {shiftH++;}
@@ -256,16 +257,16 @@ int endLine=0;
 	else {
 	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
           //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
-	  write_num(screen1,14,1,posBufX,B_RED,F_WHITE,1);
-	  write_num(screen1,18,1,shiftH,B_CYAN,F_WHITE,1);
-	  write_num(screen1,24,1,endLine,B_BLUE,F_WHITE,1);
-	  write_num(screen1,28,1,findEndline(tempLine),B_BLUE,F_WHITE,1);
-	  if(posBufX > endLine) {	
-	    for(i = endLine; i < posBufX; i++) {
+	  write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
+	  write_num(screen1,14,2,posBufX,B_RED,F_WHITE,1);
+	  //temporary solution
+	  if (shiftH>0) usleep(90000);
+	  if(posBufX > findEndline(tempLine)) {	
+	    for(i = findEndline(tempLine); i < posBufX; i++) {
 	     tempLine.linea[i].ch = FILL_CHAR;
              tempLine.linea[i].specialChar = 0;
 	     tempLine.linea[i].attrib = EDIT_FORECOLOR;
-	   }
+	   } 
           }
 	  tempLine.linea[posBufX].ch = accentchar[1];
           tempLine.linea[posBufX].specialChar = accentchar[0];
