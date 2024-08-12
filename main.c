@@ -234,7 +234,7 @@ int keypressed = 0;
 	         //Process raw edit input from keyboard in editor.c		
 		{
 		  //try to avoid printing unwanted chars with cursor keys
-		  if (ch != 0 && esc_key==0 && unwantedChars == 0) editor_section(ch);
+		  if (ch != 0 && esc_key==0 && unwantedChars == 0&& posBufX <MAX_LINE_SIZE) editor_section(ch);
 	        }
 	   }
         }else{
@@ -350,10 +350,10 @@ int special_keys() {
         cursorX = cursorX + 1;
         //shiftH = 0;
       } else{
-	shiftH++;
+	if (posBufX<MAX_LINE_SIZE) shiftH++;
 	buffertoScreen(1);      
       }
-      posBufX++;
+      if (posBufX<MAX_LINE_SIZE) posBufX++;
     } else if(strcmp(chartrail, K_UP_TRAIL) == 0) {
       //Up-arrow key
       unwantedChars++;
@@ -532,9 +532,10 @@ void credits() {
        i++;
      }
     } while (timer2.ticks <30);
- _printlist(&edBuf1);
-  printf("%ld:%ld\n", posBufX, posBufY);
-  printf("\n%ld\n",sizeof(&edBuf1));
+//log
+// _printlist(&edBuf1);
+//  printf("%ld:%ld\n", posBufX, posBufY);
+//  printf("\n%ld\n",sizeof(&edBuf1));
   _deletetheList(&edBuf1); //free edit Buffer
   resetAnsi(0);
  // close_term();

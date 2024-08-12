@@ -187,7 +187,7 @@ int endLine=0;
       }
       //check if we are at the limit of our display to print chars
       if (cursorX < new_columns-2) cursorX++;
-      
+      if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {shiftH++;}
       //SYNTAX HIGHLIGHTING DEMO
       //Highlight numbers in GREEN
       if ((accentchar[1] >= 48) && (accentchar[1] <=57)) attrib = FH_GREEN; 
@@ -201,9 +201,6 @@ int endLine=0;
       aux = _getObject(edBuf1, posBufY); 
       if ((accentchar[1] >= 123) && (accentchar[1] <=126)) attrib = FH_CYAN; 
       aux = _getObject(edBuf1, posBufY);
-
-
-
 
       //FIRST TIME -> CREATE LINES IN BUFFER
       if (aux == NULL) {
@@ -228,14 +225,17 @@ int endLine=0;
         tempLine.linea[posBufX].attrib = attrib;
 	edBuf1 = _addatend(edBuf1, _newline(tempLine));
 	linetoScreenRAW(cursorY,tempLine);
+          
+
      } else
 	//LINE ALREADY EXISTS
 	{
 	//Locate the end of the line
 	endLine = findEndline(tempLine);
+
 	//Insert characters in the middle of other characters
 	if (endLine > posBufX) {
-	
+
 	   tempLine.index = posBufY; //with every line index is incremented
 	   if (insertMode == FALSE){
 	     for (i=endLine; i>=posBufX; i--){ 
@@ -250,22 +250,27 @@ int endLine=0;
               posBufX = posBufX + 1;
              _updateLine(edBuf1, posBufY, &tempLine);
 	     linetoScreenRAW(cursorY,tempLine);	
-	     
-	}    
+	     	
+	}
+          	
 	else {
 	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
           //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
-	  if(posBufX > endLine) {
+	  write_num(screen1,14,1,posBufX,B_RED,F_WHITE,1);
+	  write_num(screen1,18,1,shiftH,B_CYAN,F_WHITE,1);
+	  write_num(screen1,24,1,endLine,B_BLUE,F_WHITE,1);
+	  write_num(screen1,28,1,findEndline(tempLine),B_BLUE,F_WHITE,1);
+	  if(posBufX > endLine) {	
 	    for(i = endLine; i < posBufX; i++) {
 	     tempLine.linea[i].ch = FILL_CHAR;
              tempLine.linea[i].specialChar = 0;
 	     tempLine.linea[i].attrib = EDIT_FORECOLOR;
 	   }
-          } 
+          }
 	  tempLine.linea[posBufX].ch = accentchar[1];
           tempLine.linea[posBufX].specialChar = accentchar[0];
           tempLine.linea[posBufX].attrib = attrib;
-	  posBufX = posBufX + 1;
+	   posBufX = posBufX + 1;
 	  tempLine.linea[posBufX].ch = END_LINE_CHAR;
           tempLine.linea[posBufX].specialChar = 0;
           tempLine.linea[posBufX].attrib = attrib;
@@ -273,6 +278,9 @@ int endLine=0;
 	  linetoScreenRAW(cursorY,tempLine);
          }
       }
+     if (shiftH>0) {
+	     buffertoScreen(1);
+     }
     }
     old_cursorX = cursorX;
     old_cursorY = cursorY;
@@ -446,7 +454,8 @@ int endLine=0;
 	 }
      }
       //cleanScreenLine(cursorY);
-      if(cursorX > START_CURSOR_X){     
+     
+     if(cursorX > START_CURSOR_X){     
         cursorX = cursorX - 1;
         posBufX--;
         _updateLine(edBuf1, posBufY, &tempLine);    
