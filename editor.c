@@ -19,6 +19,7 @@
 #include "editor.h"
 #include "fileb.h"
 #include "edbuf.h"
+int oldEndLine= 0;
 
 wchar_t convertChar(char c1, char c2) {
     // Given the two-byte representation for a Char get the wchar convrsion
@@ -43,6 +44,7 @@ void linetoScreenRAW(long whereY, VLINES tempLine){
    for (i=0; i<findEndline(tempLine); i++){
 	   attrib = tempLine.linea[i+shiftH].attrib;  
          //don't print beyond display!
+
 	 if (i+START_CURSOR_X < new_columns-1){
 	  if(tempLine.linea[i].specialChar!= 0) {
 	    //Special char ? print the two values to screen buffer.
@@ -55,7 +57,7 @@ void linetoScreenRAW(long whereY, VLINES tempLine){
             printf("%c", tempLine.linea[i+shiftH].ch);
   	  }
        }
-   }
+   } 
 }
 
 void linetoScreen(long whereY, VLINES tempLine){
@@ -160,7 +162,7 @@ int editor_section(char ch){
 char accentchar[2];
 int insertMode=0;
 VLINES *aux = NULL;
-VLINES splitLine;
+VLINES splitLine = {0};
 int i,j=0;
 int attrib=EDIT_FORECOLOR;
 char newch=0;
@@ -257,10 +259,16 @@ int endLine=0;
 	else {
 	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
           //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
-	  write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
-	  write_num(screen1,14,2,posBufX,B_RED,F_WHITE,1);
+	  //TODO: when writing fast, this routine is activated
+	  //write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
+	  //write_num(screen1,14,2,oldEndLine,B_RED,F_WHITE,1);
+	  if (shiftH > 0) { //temporary solution
+	          oldEndLine = findEndline(tempLine);
+		  endLine = oldEndLine; 
+		  shiftH--;
+		  return 0;
+	  }
 	  //temporary solution
-	  if (shiftH>0) usleep(90000);
 	  if(posBufX > findEndline(tempLine)) {	
 	    for(i = findEndline(tempLine); i < posBufX; i++) {
 	     tempLine.linea[i].ch = FILL_CHAR;
@@ -287,7 +295,7 @@ int endLine=0;
     old_cursorY = cursorY;
     oldposBufX = posBufX;
     oldposBufY = posBufY;
-
+    oldEndLine = endLine;
    //HANDLE ENTER KEY 
     if (ch == K_ENTER){
       //Add line to buffer
@@ -325,7 +333,7 @@ int endLine=0;
 		{
 		     _dumpLine(edBuf1, j, &tempLine);
     	             _updateLine(edBuf1, j+1, &tempLine);
-		     cleanSection(j+START_CURSOR_Y,0,findEndline(tempLine));
+		     if (j+START_CURSOR_Y<new_rows-3) cleanSection(j+START_CURSOR_Y,0,findEndline(tempLine));
 	   	}
 	     _dumpLine(edBuf1, posBufY, &tempLine);
 	     //Where are we on current line? -> Shall we move part of it?
@@ -359,11 +367,11 @@ int endLine=0;
 	          
       } 
       //}
-     //scroll if needed
-	        if (_length(&edBuf1) > vdisplayArea ) {
-		  currentLine++;
+     //scroll if needed, when cursor is at the end and there are lines left
+	        if (_length(&edBuf1) > vdisplayArea && cursorY == new_rows-3 ) {
 	          buffertoScreen(1);
-		}
+		  currentLine++;
+		} 
 
       //Move buffer pointer positions
       posBufY = posBufY + 1;
@@ -371,8 +379,7 @@ int endLine=0;
  
     }
       //fileModified = FILE_MODIFIED;
-      
-   if(ch == K_BACKSPACE) {
+ if(ch == K_BACKSPACE) {
       //BACKSPACE key
       update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
       if (posBufX == findEndline(tempLine)){
@@ -455,8 +462,7 @@ int endLine=0;
 	 }
      }
       //cleanScreenLine(cursorY);
-     
-     if(cursorX > START_CURSOR_X){     
+      if(cursorX > START_CURSOR_X){     
         cursorX = cursorX - 1;
         posBufX--;
         _updateLine(edBuf1, posBufY, &tempLine);    
