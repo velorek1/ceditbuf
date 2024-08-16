@@ -277,8 +277,7 @@ int findEndline(VLINES line) {
       break;
     i++;
   } while(i < MAX_LINE_SIZE);
-  if (ch == 0x00) result = -1; 
-  else result = i;
+  result = i;
   ch = 0;
   return result;
 }
