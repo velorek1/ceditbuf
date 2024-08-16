@@ -273,11 +273,12 @@ int findEndline(VLINES line) {
   do {
     ch = line.linea[i].ch;
     //write_ch(i,1,ch,F_RED,B_WHITE);
-    if(ch == 0x00 || ch == 0x10 || ch == 0x0A)
+    if(ch == 0x00 || ch == 0x10 || ch == 0x0A) //ch = 00
       break;
     i++;
   } while(i < MAX_LINE_SIZE);
-  result = i;
+  if (ch == 0x00) result = -1; 
+  else result = i;
   ch = 0;
   return result;
 }

@@ -41,7 +41,9 @@ void linetoScreenRAW(long whereY, VLINES tempLine){
 //dump temporary Line to screen buffer - RAW MODE
    int i=0;
    int attrib = EDIT_FORECOLOR;
-   for (i=0; i<findEndline(tempLine); i++){
+   int tempEndLine = findEndline(tempLine);
+   //if (tempEndLine <0) return;
+   for (i=0; i<tempEndLine; i++){
 	   attrib = tempLine.linea[i+shiftH].attrib;  
          //don't print beyond display!
 
@@ -65,7 +67,8 @@ void linetoScreen(long whereY, VLINES tempLine){
    int i=0;
    int attrib = EDIT_FORECOLOR;
    wchar_t temp='0';
-   for (i=0; i<findEndline(tempLine); i++){
+   int tempEndLine = findEndline(tempLine);
+   for (i=0; i<tempEndLine; i++){
 	   attrib = tempLine.linea[i+shiftH].attrib;  
          //don't print beyond display!
 	 if (i+START_CURSOR_X < new_columns-1){
@@ -227,8 +230,7 @@ int endLine=0;
         tempLine.linea[posBufX].specialChar = 0;
         tempLine.linea[posBufX].attrib = attrib;
 	edBuf1 = _addatend(edBuf1, _newline(tempLine));
-	linetoScreenRAW(cursorY,tempLine);
-          
+	linetoScreenRAW(cursorY,tempLine);          
 
      } else
 	//LINE ALREADY EXISTS
@@ -260,17 +262,18 @@ int endLine=0;
 	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
           //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
 	  //TODO: when writing fast, this routine is activated
-	  //write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
-	  //write_num(screen1,14,2,oldEndLine,B_RED,F_WHITE,1);
-	  if (shiftH > 0) { //temporary solution
-	          oldEndLine = findEndline(tempLine);
-		  endLine = oldEndLine; 
-		  shiftH--;
+	  write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
+	  //write_num(screen1,14,2,oldEndiLine,B_RED,F_WHITE,1);
+	  if (shiftH > 0 && endLine<0) { //temporary solution
+	          //oldEndLine = findEndline(tempLine);
+		  //endLine = posBufX;
 		  return 0;
+		  shiftH--; 
 	  }
+
 	  //temporary solution
-	  if(posBufX > findEndline(tempLine)) {	
-	    for(i = findEndline(tempLine); i < posBufX; i++) {
+	  if(posBufX > endLine) {	  
+	    for(i = endLine; i < posBufX; i++) {
 	     tempLine.linea[i].ch = FILL_CHAR;
              tempLine.linea[i].specialChar = 0;
 	     tempLine.linea[i].attrib = EDIT_FORECOLOR;
@@ -411,8 +414,8 @@ int endLine=0;
 		{
                      _dumpLine(edBuf1, j+1, &tempLine);
 		     _hardupdateLINE(&edBuf1, j, tempLine);
-	             linetoScreenRAW(j+START_CURSOR_Y,tempLine);
-		     cleanScreenLine(j+START_CURSOR_Y+1);   
+	             if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
+		     if (j+START_CURSOR_Y<new_rows-3)  cleanScreenLine(j+START_CURSOR_Y+1);   
                      //cleanSection(cursorY, findEndline(tempLine), 2);
 	      }
 	      } else {
@@ -431,8 +434,8 @@ int endLine=0;
 		{
                      _dumpLine(edBuf1, j+1, &tempLine);
 		     _hardupdateLINE(&edBuf1, j, tempLine);
-	             linetoScreenRAW(j+START_CURSOR_Y,tempLine);
-		     cleanScreenLine(j+START_CURSOR_Y+1);   
+	             if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
+		     if (j+START_CURSOR_Y<new_rows-3) cleanScreenLine(j+START_CURSOR_Y+1);   
                      //cleanSection(cursorY, findEndline(tempLine), 2);
 	       }
                //cleanScreenLine(posBufY+1);   
