@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_LINE_SIZE 1022
+#define MAX_LINE_SIZE 512
 #define TRUE 1
 #define FALSE 0
 typedef int BOOL;
