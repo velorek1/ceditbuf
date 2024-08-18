@@ -342,11 +342,13 @@ int special_keys() {
         //editScroll.bufferX--;
       }
       if (posBufX>0) posBufX--;
-      if (cursorX == 1 && shiftH>0) {shiftH--; buffertoScreen(1);}
+      //adjust shiftH when going back to account for the fact that cursorX=1 is not enough
+      if (cursorX == new_columns - 4) shiftH++;
+      if (cursorX == 1 && shiftH>0) {shiftH--;buffertoScreen(1);}
     } else if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
       //Right-arrow key
       unwantedChars++;
-      if(cursorX < new_columns - 2){
+      if(cursorX < new_columns - 3){
         cursorX = cursorX + 1;
         //shiftH = 0;
       } else{

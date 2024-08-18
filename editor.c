@@ -48,7 +48,7 @@ void linetoScreenRAW(long whereY, VLINES tempLine){
          //don't print beyond display!
 
 	 if (i+START_CURSOR_X < new_columns-1){
-	  if(tempLine.linea[i].specialChar!= 0) {
+	  if(tempLine.linea[i+shiftH].specialChar!= 0) {
 	    //Special char ? print the two values to screen buffer.
             gotoxy(i+START_CURSOR_X+1, whereY+1);
             outputcolor(attrib, EDITAREACOL);
@@ -111,9 +111,11 @@ void cleanSection(long whereY, long start, int amount)
 {
    int i=0;
    for (i=start; i<start+amount; i++){
+	   if (i<new_columns-2){
 	 	gotoxy(i+START_CURSOR_X+1, whereY+1);
-         	outputcolor(EDIT_FORECOLOR, EDITAREACOL);
+        	outputcolor(EDIT_FORECOLOR, EDITAREACOL);
           	printf("%c", FILL_CHAR);
+	   }
 	}
     resetAnsi(0);
    
@@ -194,6 +196,7 @@ int endLine=0;
       //check if we are at the limit of our display to print chars
       if (cursorX < new_columns-2) cursorX++;
       if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {shiftH++;}
+      //write_num(screen1,20,2,shiftH,B_CYAN,F_WHITE,1);
       //SYNTAX HIGHLIGHTING DEMO
       //Highlight numbers in GREEN
       if ((accentchar[1] >= 48) && (accentchar[1] <=57)) attrib = FH_GREEN; 
@@ -262,14 +265,17 @@ int endLine=0;
 	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
           //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
 	  //TODO: when writing fast, this routine is activated
-	  write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
-	  //write_num(screen1,14,2,oldEndiLine,B_RED,F_WHITE,1);
-	  if (shiftH > 0 && endLine<0) { //temporary solution
-	          //oldEndLine = findEndline(tempLine);
+	 // write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
+	 // write_num(screen1,14,2,posBufX,B_BLACK,F_WHITE,1);
+	/*  if (shiftH > 0 && posBufX!=endLine) { //temporary solution
+	          //EndLine = findEndline(tempLine);
 		  //endLine = posBufX;
-		  return 0;
 		  shiftH--; 
-	  }
+		  return 0;
+	          //tempLine.linea[posBufX+1].ch = END_LINE_CHAR;
+	          //endLine = posBufX;
+
+	  }*/
 
 	  //temporary solution
 	  if(posBufX > endLine) {	  
@@ -288,6 +294,7 @@ int endLine=0;
           tempLine.linea[posBufX].attrib = attrib;
 	  _updateLine(edBuf1, posBufY, &tempLine);  
 	  linetoScreenRAW(cursorY,tempLine);
+          if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {cursorX--;}
          }
       }
      if (shiftH>0) {
