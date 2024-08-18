@@ -196,6 +196,12 @@ char currentPath[4] = "./\0";
             strcpy(path,"\0");
             strcpy(fileName, scrollData.item);
             strcpy(fullPath, path);
+	    //reset scroll values
+	    cursorX=START_CURSOR_X;
+	    cursorY=START_CURSOR_Y;
+	    currentLine=0;
+	    shiftH=0;
+	    posBufX=0;
 	    retvalue = 1;
     }
     if (listBox1 != NULL) removeList(&listBox1);

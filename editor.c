@@ -136,8 +136,9 @@ void buffertoScreen(BOOL raw){
               linetoScreen(j+START_CURSOR_Y, tempLine);
 	  }
 	}
-
-    //_dumpLine(edBuf1, activeline, &tempLine);
+//restore tempLine to active line
+     memset(&tempLine, '\0',sizeof(tempLine));
+    _dumpLine(edBuf1, currentLine, &tempLine);
     resetAnsi(0);
 }
 
@@ -196,7 +197,7 @@ int endLine=0;
       //check if we are at the limit of our display to print chars
       if (cursorX < new_columns-2) cursorX++;
       if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {shiftH++;}
-      //write_num(screen1,20,2,shiftH,B_CYAN,F_WHITE,1);
+      //write_num(screen1,20,2,currentLine,B_CYAN,F_WHITE,1);
       //SYNTAX HIGHLIGHTING DEMO
       //Highlight numbers in GREEN
       if ((accentchar[1] >= 48) && (accentchar[1] <=57)) attrib = FH_GREEN; 
@@ -264,20 +265,6 @@ int endLine=0;
 	else {
 	  // POSBUFX >= ENDLINE: Cursor is at the end or further away from latest text
           //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE AND LINE ALREADY EXISTS
-	  //TODO: when writing fast, this routine is activated
-	 // write_num(screen1,14,1,endLine,B_RED,F_WHITE,1);
-	 // write_num(screen1,14,2,posBufX,B_BLACK,F_WHITE,1);
-	/*  if (shiftH > 0 && posBufX!=endLine) { //temporary solution
-	          //EndLine = findEndline(tempLine);
-		  //endLine = posBufX;
-		  shiftH--; 
-		  return 0;
-	          //tempLine.linea[posBufX+1].ch = END_LINE_CHAR;
-	          //endLine = posBufX;
-
-	  }*/
-
-	  //temporary solution
 	  if(posBufX > endLine) {	  
 	    for(i = endLine; i < posBufX; i++) {
 	     tempLine.linea[i].ch = FILL_CHAR;
@@ -294,13 +281,16 @@ int endLine=0;
           tempLine.linea[posBufX].attrib = attrib;
 	  _updateLine(edBuf1, posBufY, &tempLine);  
 	  linetoScreenRAW(cursorY,tempLine);
+	  //the cursor returns to its place when scrolling horizontally
           if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {cursorX--;}
          }
       }
-     if (shiftH>0) {
-	     buffertoScreen(1);
-     }
+	if (shiftH>0){
+		buffertoScreen(1);
+	}
+
     }
+    //record previous values
     old_cursorX = cursorX;
     old_cursorY = cursorY;
     oldposBufX = posBufX;

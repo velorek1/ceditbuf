@@ -356,6 +356,7 @@ int special_keys() {
 	buffertoScreen(1);      
       }
       if (posBufX<MAX_LINE_SIZE) posBufX++;
+
     } else if(strcmp(chartrail, K_UP_TRAIL) == 0) {
       //Up-arrow key
       unwantedChars++;
@@ -410,6 +411,8 @@ int special_keys() {
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       //openFileHandler();    //Open file Dialog
+         buffertoScreen(0);
+        dump_screen(screen1);
        if (openFileDialog(fileName,fullPath) == 1){
  	 filetoBuffer(fileName);
          flush_editarea(0);
@@ -556,6 +559,7 @@ void _resizeScreen(){
         currentLine = 0;
 	posBufX = 0;
 	posBufY = 0;
+	shiftH = 0;
 	buffertoScreen(0);
         dump_screen(screen1);
 	cursorX = START_CURSOR_X;
