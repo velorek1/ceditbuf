@@ -202,6 +202,7 @@ char currentPath[4] = "./\0";
 	    currentLine=0;
 	    shiftH=0;
 	    posBufX=0;
+	    posBufY = 0;
 	    retvalue = 1;
     }
     if (listBox1 != NULL) removeList(&listBox1);
