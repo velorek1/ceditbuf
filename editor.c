@@ -411,8 +411,8 @@ int endLine=0;
 		{
                      _dumpLine(edBuf1, j+1, &tempLine);
 		     _hardupdateLINE(&edBuf1, j, tempLine);
-	             if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
-		     if (j+START_CURSOR_Y<new_rows-3)  cleanScreenLine(j+START_CURSOR_Y+1);   
+	             //if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
+		     //if (j+START_CURSOR_Y<new_rows-3)  cleanScreenLine(j+START_CURSOR_Y+1);   
                      //cleanSection(cursorY, findEndline(tempLine), 2);
 	      }
 	      } else {
@@ -431,8 +431,8 @@ int endLine=0;
 		{
                      _dumpLine(edBuf1, j+1, &tempLine);
 		     _hardupdateLINE(&edBuf1, j, tempLine);
-	             if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
-		     if (j+START_CURSOR_Y<new_rows-3) cleanScreenLine(j+START_CURSOR_Y+1);   
+	             //if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
+		     //if (j+START_CURSOR_Y<new_rows-3) cleanScreenLine(j+START_CURSOR_Y+1);   
                      //cleanSection(cursorY, findEndline(tempLine), 2);
 	       }
                //cleanScreenLine(posBufY+1);   
@@ -442,6 +442,7 @@ int endLine=0;
 		if (posBufY != _length(&edBuf1)) _deleteObject(&edBuf1, _length(&edBuf1)-1, FALSE);
 	//}
 	if (posBufY>0) posBufY--;
+	buffertoScreen(1);
 	_dumpLine(edBuf1, posBufY,&tempLine);
 	cursorY = cursorY - 1;
 	//write_num(screen1,1,1,endLine,B_RED,F_WHITE,1);
