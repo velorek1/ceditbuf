@@ -52,7 +52,7 @@ int listFiles(LISTCHOICE ** listBox1, char *directory) {
   ndirs=0;
   nfiles=0;
   if (*listBox1 != NULL) removeList(listBox1);
-  *listBox1 = addatend(*listBox1, newitem("[..]",-1,-1,F_RED,B_WHITE));    // ".."
+  *listBox1 = addatend(*listBox1, newitem("[..]",-1,-1,FH_BLUE,B_WHITE));    // ".."
 
   //Start at current directory
   d = opendir(directory);
@@ -90,7 +90,7 @@ int listFiles(LISTCHOICE ** listBox1, char *directory) {
        && strcmp(dir->d_name, "..") != 0)
     { ndirs++;
       *listBox1 =
-          addatend(*listBox1, newitem(temp, -1,-1,F_RED,B_WHITE));}
+          addatend(*listBox1, newitem(temp, -1,-1,FH_BLUE,B_WHITE));}
       }
     }
   }
@@ -160,7 +160,7 @@ char currentPath[4] = "./\0";
       write_str(screen1,window_x1+2,window_y2-1,nfilestr,B_CYAN,F_WHITE,1);
       write_str(screen1,window_x1+1,window_y2-4, "   PRESS [ESC] TO EXIT   ",B_BLACK,FH_WHITE,1);
       write_str(screen1,window_x1+2,window_y1,"Select file...",B_BLACK,FH_WHITE,1);
-      ch = listBox(listBox1, window_x1+3,window_y1+1, &scrollData, B_WHITE, F_BLACK,B_BLUE, FH_WHITE, 15, VERTICAL,1,LOCKED);
+      ch = listBox(listBox1, window_x1+3,window_y1+1, &scrollData, B_WHITE, F_BLACK,B_RED, FH_WHITE, 15, VERTICAL,1,LOCKED);
       if (_animation() == -1) {ch=K_ESCAPE; break;} 
       if (ch == 0x27) {break;} 
       if (ch == K_ENTER){

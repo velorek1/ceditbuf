@@ -22,6 +22,7 @@
 #define COLUMNS_FAILSAFE 80 
 #define TRUE 1
 #define FALSE 0
+#define CURSOR_CHAR '|'
 typedef int BOOL;
 
 //USER-DEFINED MESSAGES

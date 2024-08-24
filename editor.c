@@ -442,6 +442,7 @@ int endLine=0;
 		if (posBufY != _length(&edBuf1)) _deleteObject(&edBuf1, _length(&edBuf1)-1, FALSE);
 	//}
 	if (posBufY>0) posBufY--;
+	if (cursorY == new_rows - 3 && currentLine > 0) currentLine--;
 	buffertoScreen(1);
 	_dumpLine(edBuf1, posBufY,&tempLine);
 	cursorY = cursorY - 1;

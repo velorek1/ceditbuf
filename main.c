@@ -118,7 +118,7 @@ wchar_t code_point;
             if (drawChar == 0 || drawChar == END_LINE_CHAR) drawChar = FILL_CHAR;
 	    code_point = drawChar;
     }
-    if (cursor_timer1.ticks % 2 == 0) update_ch(cursorX, cursorY, ' ', B_WHITE, F_WHITE);
+    if (cursor_timer1.ticks % 2 == 0) update_ch(cursorX, cursorY, CURSOR_CHAR, B_BLUE, F_WHITE);
     else update_ch(cursorX, cursorY, code_point, EDITAREACOL, FH_YELLOW);
     
     //REST ANSI VALUES TO HAVE HIGH INTENSITY COLORS
@@ -133,6 +133,8 @@ wchar_t code_point;
            attrib =  tempLine.linea[oldposBufX].attrib;
     //always clear cursor cell (avoids false misprints)
     update_ch(old_cursorX, old_cursorY, ' ', EDITAREACOL, EDIT_FORECOLOR);
+
+  
     //then try to update to its previous state
     if (drawChar0 != 0 && drawChar != '\0') code_point = ((drawChar0 & 0x1F) << 6) | (drawChar & 0x3F);
     else {
@@ -157,7 +159,7 @@ wchar_t code_point;
     //for (int i=0; i<findEndline(tempLine);i++) write_ch(screen1, 10+i,16, code_point, B_RED, F_WHITE,1);
     //dump_screen(screen1);
    //Buffer pointer position
-    update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
+     update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 10, new_rows, posBufX, STATUSBAR, STATUSMSG,1);
     write_num(screen1, new_columns - 20, new_rows, posBufY+1, STATUSBAR, STATUSMSG,1);
     update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
